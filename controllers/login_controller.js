@@ -1,4 +1,3 @@
-const Role = require('../models/Role');
 const User = require('../models/User');
 const JwtHelper = require('../helpers/jwtHelper');
 const PasswordHelper = require('../helpers/passwordHelper');

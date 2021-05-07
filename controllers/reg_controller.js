@@ -1,6 +1,5 @@
 const { validationResult } = require('express-validator');
 const PasswordHelper = require('../helpers/passwordHelper');
-const Role = require('../models/Role');
 const User = require('../models/User');
 
 class regController
