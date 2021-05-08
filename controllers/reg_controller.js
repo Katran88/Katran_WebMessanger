@@ -1,6 +1,7 @@
-const { validationResult } = require('express-validator');
 const PasswordHelper = require('../helpers/passwordHelper');
+const JwtHelper = require('../helpers/jwtHelper');
 const User = require('../models/User');
+const { db_defaults } = require('../config');
 
 class regController
 {
@@ -8,31 +9,36 @@ class regController
     {
         try
         {
-            const errors = validationResult(req)
-            if(!errors.isEmpty())
-            {
-                return res.status(400).json({message: 'Validation error on registration', errors});
-            }
-
-            const {username, password} = req.body;
-            const candidate = await User.findOne({username});
+            const {login, password} = req.body;
+            const candidate = await User.findOne({login: login});
             if(candidate)
             {
-                return res.status(400).json({message: 'This username is already registered'});
+                return res.status(400).json({message: 'User with this login is already registered'});
             }
 
             const hashedPassword = PasswordHelper.generateHash(password);
 
-            const user = new User({username, password: hashedPassword, role: 'user'});
+            const user = new User({login: login, password: hashedPassword, role: db_defaults.role.user});
             await user.save();
 
-            return res.json({message: 'Successful registration'});
+            const token = JwtHelper.generateToken(user._id, user.role);
+            res.cookie('token', token, {sameSite: 'strict'});
+            return res.status(200).json({message: 'Successful registration'});
         }
         catch (err)
         {
             console.log(err);
             res.status(400).json({message: 'Registration error'});
         }
+    }
+
+    async registrationRender(req, res)
+    {
+        res.clearCookie('token');
+        res.render('registrationPage',
+        {
+            title: 'Registration'
+        });
     }
 }
 

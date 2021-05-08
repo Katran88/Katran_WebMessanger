@@ -8,11 +8,11 @@ class loginController
     {
         try
         {
-            const { username, password } = req.body;
-            const user = await User.findOne({username: username});
+            const { login, password } = req.body;
+            const user = await User.findOne({login: login});
             if(!user)
             {
-                return res.status(400).json({message: 'User with this name does not exist'});
+                return res.status(400).json({message: 'User with this login does not exist'});
             }
 
             if(!PasswordHelper.compareWithHashFromDB(password, user.password))
@@ -35,6 +35,20 @@ class loginController
     {
         res.clearCookie('token');
         res.redirect('/login');
+    }
+
+    async loginRender(req, res)
+    {
+        res.clearCookie('token');
+
+        let renderObj= { title: 'Login' };
+
+        if(req.query.bad_token != undefined)
+        {
+            renderObj.message = 'You are not authorized, please, Log In first';
+        }
+
+        res.render('loginPage', renderObj);
     }
 }
 

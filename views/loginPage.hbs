@@ -1,0 +1,117 @@
+<div class="container-sm">
+    <div class="row">
+        <div class="col"><br/></div>
+        <div class="col" align="center">
+            <img src="/images/Katran.png" width="100px" height="100px"/>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="login" placeholder=" " required>
+                <label for="floatingInput">Login</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="password" placeholder=" ">
+                <label for="floatingPassword">Password</label>
+            </div>
+
+            <div align="center">
+                <label id="errorLabel" style="visibility: hidden; color: red" >Error message</label>
+                <br/>
+                <br/>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" id="reg_button" type="button" onclick="sendLogin()">Log In</button>
+            </div>
+        </div>
+        <div class="col"><br/></div>
+    </div>
+
+    <div class="row">
+        <div class="col"><br/></div>
+        <div class="col"><br/></div>
+        <div class="col">
+            <button type="button" onclick="location.href = '/registration';" class="btn btn-outline-primary">Have no account?</button>
+        </div>
+    </div>
+</div>
+
+<!-- Button trigger modal -->
+<button type="button" id="auth_modalTrigger" data-bs-toggle="modal" data-bs-target="#auth_modal" style="visibility: collapse"></button>
+
+<!-- Modal -->
+<div class="modal fade" id="auth_modal" tabindex="-1" aria-labelledby="auth_modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"> <h5 class="modal-title" id="auth_modalLabel">Welcome!</h5> </div>
+            <div class="modal-body"> You have successfully authorized</div>
+            <div class="modal-body"> Messenger will open through a few seconds :)</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+{{#if message}}
+    <button type="button" id="badtoken_modalTrigger" data-bs-toggle="modal" data-bs-target="#badtoken_modal" style="visibility: collapse"></button>
+    <div class="modal fade" id="badtoken_modal" tabindex="-1" aria-labelledby="badtoken_modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"> <h5 class="modal-title" id="badtoken_modalLabel">Ooops!</h5> </div>
+                <div class="modal-body">{{message}}</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        setTimeout(()=>{ document.getElementById('badtoken_modalTrigger').click(); }, 10);
+    </script>
+{{/if}}
+
+
+<script src='/htmlHelpers/requestHelper.js'></script>
+<script src='/htmlHelpers/regex.js'></script>
+<script>
+
+    function sendLogin()
+    {
+        const reqBody =
+        {
+            login: document.getElementById('login').value,
+            password: document.getElementById('password').value
+        }
+
+        if(!login_reg.test(reqBody.login))
+        {
+            showError(true, bad_login_reg_message);
+            return;
+        }
+
+        if(!password_reg.test(reqBody.password))
+        {
+            showError(true, bad_password_reg_message);
+            return;
+        }
+
+        showError(false);
+
+        sendRequest('POST', '/login', JSON.stringify(reqBody),
+            (res_json) =>
+            {
+                document.getElementById('auth_modalTrigger').click();
+                setTimeout(()=>{ location.href = '/'; }, 3000);
+
+            }, (res_json) =>
+            {
+                showError(true, res_json.message);
+            });
+    }
+
+    function showError(bEnable, text = null)
+    {
+        const errorLabel = document.getElementById('errorLabel');
+        errorLabel.style.visibility = bEnable ? 'visible' : 'hidden';
+
+        if(text != null)
+        {
+            errorLabel.innerHTML = text;
+        }
+    }
+</script>

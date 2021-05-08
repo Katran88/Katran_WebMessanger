@@ -15,6 +15,14 @@ class mainController
 
         }
     }
+
+    async renderPage(req, res)
+    {
+        res.render('mainPage',
+        {
+            title: 'Katran Messenger'
+        });
+    }
 }
 
 module.exports = new mainController();
