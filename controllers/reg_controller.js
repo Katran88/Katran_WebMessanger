@@ -1,6 +1,7 @@
 const PasswordHelper = require('../helpers/passwordHelper');
 const JwtHelper = require('../helpers/jwtHelper');
 const User = require('../models/User');
+const UserInfo = require('../models/UserInfo');
 const { db_defaults } = require('../config');
 
 class regController
@@ -9,7 +10,7 @@ class regController
     {
         try
         {
-            const {login, password} = req.body;
+            const {login, username, password} = req.body;
             const candidate = await User.findOne({login: login});
             if(candidate)
             {
@@ -20,6 +21,9 @@ class regController
 
             const user = new User({login: login, password: hashedPassword, role: db_defaults.role.user});
             await user.save();
+
+            const userinfo = new UserInfo({user_id: user._id, username: username});
+            await userinfo.save();
 
             const token = JwtHelper.generateToken(user._id, user.role);
             res.cookie('token', token, {sameSite: 'strict'});

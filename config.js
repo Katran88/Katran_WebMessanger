@@ -1,4 +1,5 @@
-const avatars_folder = __dirname + '\\static\\avatars';
+const static_files_folder = '\\static';
+const avatars_folder = '\\avatars';
 
 module.exports =
 {
@@ -13,9 +14,11 @@ module.exports =
         DATABASE:       'webkatran_db'
     },
 
+    root_folder: __dirname,
+    static_files_folder: static_files_folder,
     avatars_folder:      avatars_folder,
-    chat_files_folder:   __dirname + '\\static\\chat_files',
     default_avatar_path: avatars_folder + '\\defaultAvatar.png',
+    chat_files_folder:   '\\chat_files',
 
     db_defaults:
     {
@@ -38,6 +41,12 @@ module.exports =
         {
             text: 0,
             file: 1
+        },
+        message_status:
+        {
+            sent: 0,
+            unread: 1,
+            read: 2
         }
     }
 }

@@ -1,28 +1,26 @@
 const User = require('../models/User');
+const UserInfo = require('../models/UserInfo');
+const JwtHelper = require('../helpers/jwtHelper');
+const { db_defaults } = require('../config');
 
 class mainController
 {
-    async users(req, res)
+    async renderMainPage(req, res)
     {
-        try
-        {
-            const users = await User.find()
-            return res.json(users);
-        }
-        catch (err)
-        {
-            console.log(err);
+        const { id } = JwtHelper.verifyAndParseToken(req.cookies.token);
+        const user = await User.findById(id);
+        const user_info = await UserInfo.findOne({user_id: id});
 
-        }
+        let renderObj=
+        {
+            title: 'Katran Messenger',
+            profileAvatar: user_info.path_to_avatar,
+            admin: user.role ==  db_defaults.role.admin
+        };
+        res.render('mainPage', renderObj);
     }
 
-    async renderPage(req, res)
-    {
-        res.render('mainPage',
-        {
-            title: 'Katran Messenger'
-        });
-    }
+    
 }
 
 module.exports = new mainController();

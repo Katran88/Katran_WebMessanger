@@ -1,8 +1,8 @@
 const JwtHelper = require('../helpers/jwtHelper');
 
-const roleErrorMessage = (res) =>
+const haveNoPermissionReaction = (res) =>
 {
-    return res.status(403).json({message: 'You have no permission for this action'});
+    return res.redirect('mandatoryMessage/?permissionDenied');
 }
 
 module.exports = (roles) =>
@@ -19,13 +19,13 @@ module.exports = (roles) =>
                     }
                     else
                     {
-                        return roleErrorMessage(res);
+                        haveNoPermissionReaction(res);
                     }
                 }
                 catch (err)
                 {
                     console.log(err);
-                    return roleErrorMessage(res);
+                    haveNoPermissionReaction(res);
                 }
             }
 }

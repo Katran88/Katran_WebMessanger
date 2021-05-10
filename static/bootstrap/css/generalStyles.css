@@ -1,0 +1,23 @@
+:root
+{
+    --grey-color: #c8c8c8;
+    --dark-grey-color: #4c4c4c;
+    --mainbackground-color: #ffffff;
+    --blue-color: #6d9fee;
+    --dark-blue-color: #245594;
+    --chat-bubble-color: #3071c6;
+}
+
+.avatar-image
+{
+    width: 30px;
+    height: 30px;
+    border-radius: 20px;
+    margin: 2px;
+}
+
+hr
+{
+    margin: 5px auto;
+    width: 60%;
+}

@@ -1,5 +1,10 @@
 const JwtHelper = require('../helpers/jwtHelper');
 
+function badTokenRes(res)
+{
+    res.redirect('/login?bad_token');
+}
+
 module.exports = (req, res, next) =>
 {
     try
@@ -12,12 +17,12 @@ module.exports = (req, res, next) =>
         }
         else
         {
-            res.redirect('/login?bad_token');
+            badTokenRes(res);
         }
     }
     catch (err)
     {
         console.log(err);
-        res.redirect('/login?bad_token');
+        badTokenRes(res);
     }
 }

@@ -1,15 +1,38 @@
+<style>
+    :root
+    {
+        --blue-color: #6d9fee;
+    }
+
+    .container-sm
+    {
+        margin-top: 30px;
+        width: 500px;
+        height: 310px;
+        background: #eaeaea;
+        padding: 10px;
+        border-radius: 7px;
+        box-shadow: 0 0 10px var(--blue-color);
+    }
+
+    .btn
+    {
+        box-shadow: 0 0 10px var(--blue-color);
+    }
+
+</style>
+
 <div class="container-sm">
     <div class="row">
-        <div class="col"><br/></div>
         <div class="col" align="center">
-            <img src="/images/Katran.png" width="100px" height="100px"/>
+            <img src="/images/Katran.png" width="100px" height="100px" style="margin-bottom: 20px"/>
             <div class="form-floating mb-3">
                 <input type="text" class="form-control" id="login" placeholder=" " required>
-                <label for="floatingInput">Login</label>
+                <label>Login</label>
             </div>
             <div class="form-floating mb-3">
                 <input type="password" class="form-control" id="password" placeholder=" ">
-                <label for="floatingPassword">Password</label>
+                <label>Password</label>
             </div>
 
             <div align="center">
@@ -22,14 +45,12 @@
                 <button class="btn btn-primary" id="reg_button" type="button" onclick="sendLogin()">Log In</button>
             </div>
         </div>
-        <div class="col"><br/></div>
     </div>
 
     <div class="row">
-        <div class="col"><br/></div>
-        <div class="col"><br/></div>
-        <div class="col">
-            <button type="button" onclick="location.href = '/registration';" class="btn btn-outline-primary">Have no account?</button>
+        <div class="col" align="right">
+            <br/>
+            <button type="button" onclick="location.href = '/registration';" class="btn btn-primary btn-sm">Have no account?</button>
         </div>
     </div>
 </div>

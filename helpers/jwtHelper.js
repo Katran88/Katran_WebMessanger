@@ -5,7 +5,7 @@ class JwtHelper
 {
     generateToken(userId, role)
     {
-        const payload = { id: userId, role };
+        const payload = { id: userId, role: role };
 
         return jwt.sign(payload, token_secret, {expiresIn: '720d'});
     }

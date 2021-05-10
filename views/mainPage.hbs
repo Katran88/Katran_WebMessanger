@@ -1,1 +1,93 @@
-Hello!
+<link type="text/css" rel="stylesheet" href="/bootstrap/css/generalStyles.css" />
+<style>
+
+    .container
+    {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        margin-left: 50px;
+        margin-right: 50px;
+        background: transparent;
+        padding: 0;
+        border-radius: 7px;
+    }
+
+    .settings-tray
+    {
+        width: 303px;
+        background: var(--grey-color);
+        padding: 10px 15px;
+        border-radius: 0px 0px 7px 7px;
+    }
+
+    i
+    {
+        vertical-align: center;
+        margin: 5px;
+        font-size: 25px;
+        color: var(--dark-grey-color);
+        transition: 0.3s;
+    }
+    i:hover
+    {
+        /*color: var(--blue-color);*/
+        cursor: pointer;
+    }
+
+    .chat-panel
+    {
+        height: 470px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+</style>
+
+<div class="container">
+    <div class="row no-gutters">
+        <div class="col-md-4 border-end border-dark" style="height: 535px; overflow-y: auto; overflow-x: hidden;">
+            <div class="settings-tray">
+                <img src="{{profileAvatar}}" class="avatar-image">
+                <span class="settings-tray--right float-end">
+                        <i class="bi bi-people-fill" id="i_contactsTabDiv" onclick="changeTab('contactsTabDiv')"></i>
+                        <i class="bi bi-chat-right-text-fill" id="i_createConvTabDiv" onclick="changeTab('createConvTabDiv')"></i>
+                        <i class="bi bi-tools" id="i_settingsTabDiv" onclick="changeTab('settingsTabDiv')"></i>
+                        {{#if admin}}
+                        <i class="bi bi-layers" onclick="window.location.replace('/accessManagement')"></i>
+                        {{/if}}
+                </span>
+            </div>
+            <div id="contactsTabDiv" style="display: none">
+                {{>contactsTab}}
+            </div>
+            <div id="createConvTabDiv" style="display: none">
+                {{>createConvTab}}
+            </div>
+            <div id="settingsTabDiv" style="display: none">
+                {{>settingsTab}}
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="chat-panel">
+                {{>chatBubble}}
+                {{>chatBubble}}
+                {{>chatBubble}}
+                {{>chatBubble}}
+                {{>chatBubble}}
+                {{>chatBubble}}
+                {{>chatBubble}}
+                {{>chatBubble}}
+                {{>chatBubble}}
+            </div>
+            <hr>
+            <div class="form-floating">
+                <input type="text" class="form-control" placeholder=" " id="userMessage" style="height: 50px"></input>
+                <label >Your message:</label>
+            </div>
+        </div>
+    </div>
+    <script src='/htmlHelpers/tabsController.js'></script>
+</div>
