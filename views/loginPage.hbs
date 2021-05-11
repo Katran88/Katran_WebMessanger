@@ -90,9 +90,9 @@
 <script src='/htmlHelpers/requestHelper.js'></script>
 <script src='/htmlHelpers/regex.js'></script>
 <script>
-
     function sendLogin()
     {
+        Handlebars
         const reqBody =
         {
             login: document.getElementById('login').value,
@@ -113,7 +113,7 @@
 
         showError(false);
 
-        sendRequest('POST', '/login', JSON.stringify(reqBody),
+        sendRequest('/login', JSON.stringify(reqBody),
             (res_json) =>
             {
                 document.getElementById('auth_modalTrigger').click();

@@ -108,7 +108,7 @@ class contact_controller
                         });
                         await contact_2.save();
 
-                        res.status(200).json([contact_1, contact_2]);
+                        res.status(200).json([contact_1, contact_2 ]);
                     }
                     else
                     {

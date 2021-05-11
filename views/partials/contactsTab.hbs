@@ -1,25 +1,49 @@
-{{>search placeholderText='Search for contact' searchClickCallback='contactSearch()'}}
+{{>search placeholderText='Search for contact' searchClickCallback='refreshContacts()'}}
 <hr>
 <div id="current_contacts">
-    {{>contact}}
-    {{>contact}}
-    {{>contact}}
-    {{>contact}}
-    {{>contact}}
-    {{>contact}}
-    {{>contact}}
+    {{>contact }}
+    {{>contact }}
+    {{>contact }}
+    {{>contact }}
+    {{>contact }}
+    {{>contact }}
+    {{>contact }}
+
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
 <script src='/htmlHelpers/requestHelper.js'></script>
 <script src='/htmlHelpers/regex.js'></script>
 <script>
+
+    const contacts_div = document.getElementById('current_contacts');
+
     function contactSearch()
     {
 
     }
 
-    function refreshContacts()
+    async function refreshContacts()
     {
+        const login = await getUserLogin();
 
+        await sendRequest(`/api/${login}/contacts`, JSON.stringify({}),
+                (contacts) =>
+                {
+                    for (let i = 0; i < contacts.length; i++)
+                    {
+                        addContactToHTML(contacts[i])
+                    }
+                },
+                (badRespJSON) =>
+                {
+                    console.log(badRespJSON);
+                }
+        );
+    }
+
+    function addContactToHTML(contactInfo)
+    {
+        console.log(elementFromTemplate('contact'));
     }
 </script>

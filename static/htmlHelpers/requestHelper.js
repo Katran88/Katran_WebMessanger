@@ -1,8 +1,10 @@
-function sendRequest(method, url, body, ok_callback, bad_callback)
+
+
+function sendRequest(url, body, ok_callback, bad_callback)
 {
     return fetch(url,
     {
-        method: method,
+        method: 'POST',
         body: body,
         headers: { 'Content-Type':'application/json' }
     }).then(response =>
@@ -22,4 +24,23 @@ function sendRequest(method, url, body, ok_callback, bad_callback)
                 });
             }
         }).catch((err)=>{ bad_callback(err); });
+}
+
+async function getUserLogin()
+{
+     const resp = await fetch('/api/getUserLogin',
+        {
+                method: 'POST',
+                headers: { 'Content-Type':'application/json' }
+            });
+
+    if(resp.ok)
+    {
+        return (await resp.json()).login;
+    }
+    else
+    {
+        return null;
+    }
+
 }

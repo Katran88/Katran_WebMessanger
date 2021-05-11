@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const UserInfo = require('../models/UserInfo');
 
+const JwtHelper = require('../helpers/jwtHelper');
+
 function badResp(res, message)
 {
     res.status(400).json({message: message});
@@ -48,6 +50,23 @@ class user_controller
     {
         return JSON.stringify( await getUserInfoFromDBbyLogin(login) );
     }
+
+    async getUserLogin(req, res)
+    {
+        const decodedTokenData = JwtHelper.verifyAndParseToken(req.cookies.token);
+
+        const user = await User.findById(decodedTokenData.id);
+
+        if(user)
+        {
+            res.status(200).json({login: user.login});
+        }
+        else
+        {
+            badResp(res, 'user login not found');
+        }
+    }
+
 
     async getUserIdByLogin(login)
     {

@@ -31,6 +31,21 @@
         color: var(--dark-grey-color);
         transition: 0.3s;
     }
+
+    .hover_i
+    {
+        vertical-align: center;
+        margin: 5px;
+        font-size: 25px;
+        color: var(--dark-grey-color);
+        transition: 0.3s;
+    }
+
+    hover_i:hover
+    {
+        color: var(--blue-color);
+        cursor: pointer;
+    }
     i:hover
     {
         /*color: var(--blue-color);*/
@@ -83,10 +98,16 @@
                 {{>chatBubble}}
             </div>
             <hr>
-            <div class="form-floating">
-                <input type="text" class="form-control" placeholder=" " id="userMessage" style="height: 50px"></input>
-                <label >Your message:</label>
+            <div  style="display: flex">
+                <i class="bi bi-paperclip hover_i" id="i_contactsTabDiv" style="color: var(--dark-blue-color)" onclick=""></i>
+                <div class="form-floating" style="width: 650px">
+                    <input type="text" class="form-control" placeholder=" " id="userMessage" style="height: 50px"></input>
+                    <label >Your message:</label>
+                </div>
+                <i class="bi bi-telegram hover_i" id="i_contactsTabDiv" style="color: var(--dark-blue-color)" onclick=""></i>
             </div>
+
+
         </div>
     </div>
     <script src='/htmlHelpers/tabsController.js'></script>
