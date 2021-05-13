@@ -5,7 +5,9 @@
     --mainbackground-color: #ffffff;
     --blue-color: #6d9fee;
     --dark-blue-color: #245594;
-    --chat-bubble-color: #3071c6;
+    --chat-bubble-color: #c8c8c8;
+    --chat-bubble-unread: #000000;
+    --chat-bubble-read: #6d9fee;
 }
 
 .avatar-image

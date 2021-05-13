@@ -1,9 +1,29 @@
-{{>search placeholderText='Search to add conv member' searchClickCallback='convMemberSearch()'}}
-<hr>
+<div style="margin-top: 10px;width: 303px;">
+    <div class="input-group mb-3" style="margin-top: 10px;width: 303px;">
+        <input type="text" class="form-control" id="convTabSearchInput" placeholder="Search to add conv member" oninput="checkConvCheckInput()">
+        <button class="btn btn-secondary" type="button" onclick="convMemberSearch()" > <i class="bi bi-search" style="font-size: 15px";></i> </button>
+    </div>
+    <hr/>
+</div>
 
 <script>
+    const convTabSearchInput = document.getElementById('convTabSearchInput');
+
+    function checkConvCheckInput()
+    {
+        const search_value = convTabSearchInput.value;
+        if(!search_input_field_reg.test(search_value))
+        {
+            console.log(search_value);
+        }
+    }
+
     function convMemberSearch()
     {
-
+        const search_value = convTabSearchInput.value;
+        if(!search_input_field_reg.test(search_value))
+        {
+            console.log(search_value);
+        }
     }
 </script>

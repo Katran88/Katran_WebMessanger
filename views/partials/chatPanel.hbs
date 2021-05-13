@@ -1,0 +1,63 @@
+<link type="text/css" rel="stylesheet" href="/bootstrap/css/generalStyles.css" />
+<style>
+    .chat-bubble
+    {
+        display: flex; flex-direction: row-reverse;
+        background: var(--chat-bubble-color);
+        margin: 5px 10px;
+        width: fit-content;
+        max-width: 450px;
+        border-radius: 9px;
+        word-break: break-all;
+    }
+
+    .bubble-message
+    {
+        -moz-hyphens: auto;
+        -webkit-hyphens: auto;
+        -ms-hyphens: auto;
+    }
+</style>
+
+<div class="chat-panel" id="chat_panel">
+</div>
+
+<script>
+    const chat_panel_div = document.getElementById('chat_panel');
+
+    function clearChatPanelHTML()
+    {
+        chat_panel_div.innerHTML = "";
+    }
+
+    function refreshChatPanel(chat_id)
+    {
+        clearChatPanelHTML();
+        addMessageToChatPanelHTML({});
+        addMessageToChatPanelHTML({});
+        addMessageToChatPanelHTML({});
+        addMessageToChatPanelHTML({});
+        addMessageToChatPanelHTML({});
+        addMessageToChatPanelHTML({});
+        addMessageToChatPanelHTML({});
+
+    }
+
+    function addMessageToChatPanelHTML(message_info)
+    {
+        chat_panel_div.innerHTML += `<div class="chat-bubble chat-bubble" style="float: right" >
+                                        <div style="margin: 5px; min-width: 70px; ">
+                                            <img class='avatar-image' src='/avatars/user1.jpg' style="margin-left: 20px" >
+                                            <div align='center'>
+                                                <label style="font-size: 14px; font-weight: bold" >00:00</label>
+                                                <i class="bi bi-check" style="color: var(--chat-bubble-unread); font-size: 17px;"></i>
+                                            </div>
+
+                                        </div>
+
+                                        <div class='text' style="margin: 5px" >
+                                            <h6> 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message</h6>
+                                        </div>
+                                    </div>`
+    }
+</script>

@@ -48,10 +48,12 @@ class contact_controller
 
             for (let i = 0; i < contacts.length; i++)
             {
-                let contactInfo = JSON.parse(await user_controller.getInfoJSON(await user_controller.getUserLoginById(contacts[i].contact)));
+                let contactLogin = await user_controller.getUserLoginById(contacts[i].contact);
+                let contactInfo = JSON.parse(await user_controller.getInfoJSON(contactLogin));
 
                 respObj.push({
                     contact: contacts[i].contact,
+                    login: contactLogin,
                     chat_id: contacts[i].chat_id,
                     username: contactInfo.username,
                     path_to_avatar: contactInfo.path_to_avatar,
@@ -108,7 +110,7 @@ class contact_controller
                         });
                         await contact_2.save();
 
-                        res.status(200).json([contact_1, contact_2 ]);
+                        res.status(200).json({chat_id: chat_id});
                     }
                     else
                     {

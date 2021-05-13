@@ -1,26 +1,205 @@
-{{>search placeholderText='Search for contact' searchClickCallback='refreshContacts()'}}
-<hr>
-<div id="current_contacts">
-    {{>contact }}
-    {{>contact }}
-    {{>contact }}
-    {{>contact }}
-    {{>contact }}
-    {{>contact }}
-    {{>contact }}
+<link type="text/css" rel="stylesheet" href="/bootstrap/css/generalStyles.css" />
+<style>
+
+    .contact_div
+    {
+        width: 303px;
+        max-height: 66px;
+    }
+
+    .search_contact_div
+    {
+        width: 303px;
+        max-height: 66px;
+    }
+
+    .contact
+    {
+        height: 60px;
+        max-height: 60px;
+        padding: 5px 5px;
+        display: flex;
+        vertical-align: baseline;
+        background: var(--mainbackground-color);
+        transition: .3s ease;
+        border-radius: 5px;
+    }
+
+    h6
+    {
+        margin-top: 6px;
+        margin-bottom: 0;
+    }
+
+    p
+    {
+        margin: 0;
+    }
+
+    .contact:hover
+    {
+        background: var(--blue-color);
+        cursor: pointer;
+    }
+
+    #current_contacts
+    {
+        height: 402px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+</style>
+
+<div style=" margin-top: 10px;width: 303px; height: 70px">
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" id="contactTabSearchInput" placeholder="Search for contact" oninput="contactSearch()">
+        <button class="btn btn-secondary" type="button" onclick="contactSearch()" > <i class="bi bi-search" style="font-size: 15px";></i> </button>
+    </div>
+    <i class="bi bi-person-dash-fill" onclick="deleteFromContacts(selectedContactNode)" id="deleteFromContactsBtn"
+       style="color: var(--dark-grey-color); position: absolute; top: 95px; left: 260px; visibility: hidden"; ></i>
+    <hr/>
+</div>
+
+
+
+<div id="current_contacts" >
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
-<script src='/htmlHelpers/requestHelper.js'></script>
-<script src='/htmlHelpers/regex.js'></script>
 <script>
-
     const contacts_div = document.getElementById('current_contacts');
+    const contactTabSearchInput = document.getElementById('contactTabSearchInput');
+    let selectedContactNode = null;
+    let canSendReqForSearch = true;
 
-    function contactSearch()
+    function checkContactTabSearchInput()
     {
+        const search_value = contactTabSearchInput.value;
+        if(contactTabSearchInput.value)
+        {
+            let newSearchString = "";
+            for (let i = 0; i < search_value.length; i++)
+            {
+                if(search_input_field_reg.test(search_value[i]))
+                {
+                    newSearchString += search_value[i];
+                }
+                else
+                {
+                    newSearchString = "";
+                    break;
+                }
+            }
 
+            contactTabSearchInput.value = newSearchString;
+        }
+    }
+
+    async function contactSearch()
+    {
+        checkContactTabSearchInput()
+        const searchString = contactTabSearchInput.value;
+
+        if(searchString)
+        {
+            let suitableContactsAmount = 0;
+            for (let i = 0; i < contacts_div.children.length; i++)
+            {
+                if( contacts_div.children[i].className == 'contact_div')
+                {
+                    if(contacts_div.children[i].dataset.username.toLowerCase().indexOf(searchString.toLowerCase()) >= 0)
+                    {
+                        contacts_div.children[i].style.display = 'inline-block';
+                        suitableContactsAmount++;
+                    }
+                    else
+                    {
+                        contacts_div.children[i].style.display = 'none';
+                    }
+                }
+            }
+
+            if(suitableContactsAmount == 0 && canSendReqForSearch)
+            {
+                canSendReqForSearch = false;
+                clearSearchedContactsHTML();
+                const login = await getUserLogin();
+
+                await sendRequest(`/api/${login}/searchForNewContacts`, JSON.stringify({ search_username: searchString }),
+                    (foundContacts) =>
+                    {
+                        for (let i = 0; i < foundContacts.length; i++)
+                        {
+                            addSearchContactToHTML(foundContacts[i])
+                        }
+                    },
+                    (badRespJSON) =>
+                    {
+                        console.log(badRespJSON);
+                    }
+                );
+
+                canSendReqForSearch = true;
+            }
+        }
+        else
+        {
+            for (let i = 0; i < contacts_div.children.length; i++)
+            {
+                if( contacts_div.children[i].className == 'contact_div')
+                {
+                    contacts_div.children[i].style.display = 'inline-block';
+                }
+            }
+
+            clearSearchedContactsHTML();
+        }
+
+    }
+
+    async function addToContacts(contact_login)
+    {
+        for (let i = 0; i < contacts_div.children.length; i++)
+        {
+            if(contacts_div.children[i].className == 'search_contact_div' &&
+               contacts_div.children[i].dataset.login.indexOf(contact_login) == 0)
+            {
+                let contactInfo =
+                {
+                    contact: contacts_div.children[i].dataset.user_id,
+                    username: contacts_div.children[i].dataset.username,
+                    path_to_avatar: contacts_div.children[i].dataset.path_to_avatar,
+                    status: contacts_div.children[i].dataset.status,
+                    is_blocked: contacts_div.children[i].dataset.is_blocked,
+                    unread_messages_amount: 0
+                };
+
+                contacts_div.removeChild(contacts_div.children[i]);
+                const login = await getUserLogin();
+
+                await sendRequest(`/api/${login}/addContact/${contact_login}`, JSON.stringify({}),
+                        (respObj) =>
+                        {
+                            contactInfo.chat_id = respObj.chat_id;
+                            console.log(contactInfo);
+                            addContactToHTML(respObj, false);
+                        },
+                        (badRespJSON) =>
+                        {
+                            console.log(badRespJSON);
+                        }
+                );
+            }
+        }
+    }
+
+    async function deleteFromContacts(selectedContactNode)
+    {
+        if(selectedContactNode)
+        {
+            console.log(selectedContactNode.dataset.login);
+        }
     }
 
     async function refreshContacts()
@@ -28,22 +207,109 @@
         const login = await getUserLogin();
 
         await sendRequest(`/api/${login}/contacts`, JSON.stringify({}),
-                (contacts) =>
+            (contacts) =>
+            {
+                clearContactsHTML();
+
+                for (let i = 0; i < contacts.length; i++)
                 {
-                    for (let i = 0; i < contacts.length; i++)
-                    {
-                        addContactToHTML(contacts[i])
-                    }
-                },
-                (badRespJSON) =>
-                {
-                    console.log(badRespJSON);
+                    addContactToHTML(contacts[i], true);
+                    addContactToHTML(contacts[i], true);
+                    addContactToHTML(contacts[i], true);
                 }
+            },
+            (badRespJSON) =>
+            {
+                console.log(badRespJSON);
+            }
         );
     }
 
-    function addContactToHTML(contactInfo)
+    function clearContactsHTML()
     {
-        console.log(elementFromTemplate('contact'));
+        contacts_div.innerHTML = "";
     }
+
+    function clearSearchedContactsHTML()
+    {
+        for (let i = 0; i < contacts_div.children.length; i++)
+        {
+            if( contacts_div.children[i].className == 'search_contact_div')
+            {
+                contacts_div.removeChild(contacts_div.children[i]);
+            }
+        }
+    }
+
+    function addContactToHTML(contactInfo, visibleAfterCreation)
+    {
+        contacts_div.innerHTML += `<div class='contact_div' id='${contactInfo.chat_id}' onclick="selectContact('${contactInfo.chat_id}')" style="display: ${visibleAfterCreation ? 'inline-block' : 'none'}"
+                                                                                        data-login='${contactInfo.login}'
+                                                                                        data-chat_kind='0'
+                                                                                        data-contact='${contactInfo.contact}'
+                                                                                        data-username=${contactInfo.username}  >
+                                        <div class='contact'>
+                                            <img class='avatar-image' src='${contactInfo.path_to_avatar}' style='margin-right: 7px' >
+                                            <div class='text'>
+                                                <h6>${contactInfo.username}</h6>
+                                                <p class='text-muted'>${contactInfo.is_blocked ? "User blocked" : ""}</p>
+                                                <p class='text-muted' style='visibility: hidden'>placeholderplaceholder111111</p>
+                                            </div>
+                                            <div align='center'>
+                                                <span class='badge bg-secondary' id='${contactInfo.chat_id + "_uma"}' style="visibility: ${contactInfo.unread_messages_amount > 0 ? 'visible' : 'hidden'}" >
+                                                    ${contactInfo.unread_messages_amount}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                    </div>`;
+    }
+
+    function addSearchContactToHTML(searchContactInfo)
+    {
+        contacts_div.innerHTML += `<div class='search_contact_div'  id='${searchContactInfo.user_id}'
+                                                                    data-user_id='${searchContactInfo.user_id}'
+                                                                    data-login='${searchContactInfo.login}'
+                                                                    data-username='${searchContactInfo.username}'
+                                                                    data-path_to_avatar='${searchContactInfo.path_to_avatar}'
+                                                                    data-status='${searchContactInfo.status}'
+                                                                    data-is_blocked='${searchContactInfo.is_blocked}'>
+                                        <div class='contact'>
+                                            <img class='avatar-image' src='${searchContactInfo.path_to_avatar}' style='margin-right: 7px' >
+                                            <div class='text'>
+                                                <h6>${searchContactInfo.username}</h6>
+                                                <p class='text-muted'>${searchContactInfo.is_blocked ? "User blocked" : ""}</p>
+                                                <p class='text-muted' style='visibility: hidden'>placeholderplaceholder111111</p>
+                                            </div>
+                                            <div align='center'>
+                                                <i class="bi bi-person-plus-fill" style="color: var(--dark-grey-color)" onclick="addToContacts('${searchContactInfo.login}')"></i>
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                    </div>`;
+    }
+
+    function selectContact(chat_id)
+    {
+        if(selectedContactNode)
+        {
+            resetContactSelection();
+        }
+
+        selectedContactNode = document.getElementById(chat_id);
+        selectedContactNode.children[0].style.background = 'var(--blue-color)';
+
+        document.getElementById('deleteFromContactsBtn').style.visibility = 'visible';
+        refreshChatPanel(chat_id);
+    }
+
+    function resetContactSelection()
+    {
+        selectedContactNode.children[0].style.background = 'var(--mainbackground-color)';
+        selectedContactNode = null;
+        document.getElementById('deleteFromContactsBtn').style.visibility = 'hidden';
+        refreshChatPanel(null);
+    }
+
 </script>
+

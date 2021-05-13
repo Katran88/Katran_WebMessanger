@@ -54,22 +54,24 @@
 
     .chat-panel
     {
-        height: 470px;
-        overflow-y: auto;
+        height: 465px;
+        overflow-y: visible;
         overflow-x: hidden;
     }
 
 </style>
+<script src='/htmlHelpers/requestHelper.js'></script>
+<script src='/htmlHelpers/regex.js'></script>
 
 <div class="container">
     <div class="row no-gutters">
-        <div class="col-md-4 border-end border-dark" style="height: 535px; overflow-y: auto; overflow-x: hidden;">
+        <div class="col-md-4 border-end border-dark" style="height: 535px; ">
             <div class="settings-tray">
                 <img src="{{profileAvatar}}" class="avatar-image">
                 <span class="settings-tray--right float-end">
-                        <i class="bi bi-people-fill" id="i_contactsTabDiv" onclick="changeTab('contactsTabDiv')"></i>
-                        <i class="bi bi-chat-right-text-fill" id="i_createConvTabDiv" onclick="changeTab('createConvTabDiv')"></i>
-                        <i class="bi bi-tools" id="i_settingsTabDiv" onclick="changeTab('settingsTabDiv')"></i>
+                        <i class="bi bi-people-fill" id="i_contactsTabDiv" onclick="refreshContactsTab()"></i>
+                        <i class="bi bi-chat-right-text-fill" id="i_createConvTabDiv" onclick="refreshCreateConvTab()"></i>
+                        <i class="bi bi-tools" id="i_settingsTabDiv" onclick="refreshSettingsTab()"></i>
                         {{#if admin}}
                         <i class="bi bi-layers" onclick="window.location.replace('/accessManagement')"></i>
                         {{/if}}
@@ -84,31 +86,44 @@
             <div id="settingsTabDiv" style="display: none">
                 {{>settingsTab}}
             </div>
+            <script src='/htmlHelpers/tabsController.js'></script>
+            <script defer>
+                function refreshContactsTab()
+                {
+                    changeTab('contactsTabDiv');
+                    refreshContacts();
+                }
+
+                function refreshCreateConvTab()
+                {
+                    changeTab('createConvTabDiv');
+                    //refreshContacts();
+                }
+
+                function refreshSettingsTab()
+                {
+                    changeTab('settingsTabDiv');
+                    //refreshContacts();
+                }
+
+                refreshContactsTab()
+            </script>
+
+
         </div>
         <div class="col-md-8">
-            <div class="chat-panel">
-                {{>chatBubble}}
-                {{>chatBubble}}
-                {{>chatBubble}}
-                {{>chatBubble}}
-                {{>chatBubble}}
-                {{>chatBubble}}
-                {{>chatBubble}}
-                {{>chatBubble}}
-                {{>chatBubble}}
-            </div>
+            {{>chatPanel}}
             <hr>
-            <div  style="display: flex">
-                <i class="bi bi-paperclip hover_i" id="i_contactsTabDiv" style="color: var(--dark-blue-color)" onclick=""></i>
-                <div class="form-floating" style="width: 650px">
+            <div  style="display: flex; background: var(--grey-color); border-radius: 7px 7px 0px 0px; height: 100px">
+                <i class="bi bi-paperclip hover_i" id="i_contactsTabDiv" style="color: var(--blue-color)" onclick=""></i>
+                <div class="form-floating" style="width: 650px; margin: 5px">
                     <input type="text" class="form-control" placeholder=" " id="userMessage" style="height: 50px"></input>
                     <label >Your message:</label>
                 </div>
-                <i class="bi bi-telegram hover_i" id="i_contactsTabDiv" style="color: var(--dark-blue-color)" onclick=""></i>
+                <i class="bi bi-telegram hover_i" id="i_contactsTabDiv" style="color: var(--blue-color)" onclick=""></i>
             </div>
 
 
         </div>
     </div>
-    <script src='/htmlHelpers/tabsController.js'></script>
 </div>
