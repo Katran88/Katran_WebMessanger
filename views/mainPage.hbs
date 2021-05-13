@@ -6,13 +6,12 @@
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        margin-left: 50px;
-        margin-right: 50px;
-        background: transparent;
+        width: 985px;
+        height: 937px;
+        margin-left: 25%;
+        background: rgba(188, 188, 188, 0.3);
+        box-shadow: 0 0 10px rgb(138, 138, 138);
         padding: 0;
-        border-radius: 7px;
     }
 
     .settings-tray
@@ -54,7 +53,7 @@
 
     .chat-panel
     {
-        height: 465px;
+        height: 830px;
         overflow-y: visible;
         overflow-x: hidden;
     }
@@ -65,7 +64,7 @@
 
 <div class="container">
     <div class="row no-gutters">
-        <div class="col-md-4 border-end border-dark" style="height: 535px; ">
+        <div class="col-md-4 border-end border-dark" style="height: 937px; margin-left: 12px">
             <div class="settings-tray">
                 <img src="{{profileAvatar}}" class="avatar-image">
                 <span class="settings-tray--right float-end">
@@ -107,20 +106,29 @@
                 }
 
                 refreshContactsTab()
+
+                function enterMessageTrigger(key)
+                {
+                    if (key == 'Enter')
+                    {
+                        document.getElementById("sendMessage_btn").click();
+                    }
+                }
+
             </script>
 
 
         </div>
-        <div class="col-md-8">
+        <div class="col-md-8" style="position: absolute; left: 34%">
             {{>chatPanel}}
             <hr>
-            <div  style="display: flex; background: var(--grey-color); border-radius: 7px 7px 0px 0px; height: 100px">
-                <i class="bi bi-paperclip hover_i" id="i_contactsTabDiv" style="color: var(--blue-color)" onclick=""></i>
+            <div  style="display: flex; background: var(--grey-color); border-radius: 7px 7px 0px 0px; height: 100px; margin-right: 12px">
+                <i class="bi bi-paperclip hover_i" id="i_contactsTabDiv" style="color: var(--blue-color); margin-top: 17px; margin-left: 12px; margin-right: 0px; font-size: 40px" onclick=""></i>
                 <div class="form-floating" style="width: 650px; margin: 5px">
-                    <input type="text" class="form-control" placeholder=" " id="userMessage" style="height: 50px"></input>
+                    <textarea type="text" class="form-control" placeholder=" " onkeypress="return enterMessageTrigger(event.key)" id="userMessage" style="height: 80px;overflow-y: visible; resize: none;"></textarea>
                     <label >Your message:</label>
                 </div>
-                <i class="bi bi-telegram hover_i" id="i_contactsTabDiv" style="color: var(--blue-color)" onclick=""></i>
+                <i class="bi bi-telegram hover_i" id="sendMessage_btn" style="color: var(--blue-color); margin-top: 17px; margin-left: 0px; font-size: 40px" onclick="sendMessage()"></i>
             </div>
 
 

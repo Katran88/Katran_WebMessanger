@@ -42,5 +42,22 @@ async function getUserLogin()
     {
         return null;
     }
+}
 
+async function getUserId()
+{
+    const resp = await fetch('/api/getUserId',
+        {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json' }
+        });
+
+    if(resp.ok)
+    {
+        return (await resp.json()).id;
+    }
+    else
+    {
+        return null;
+    }
 }

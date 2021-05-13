@@ -67,6 +67,34 @@ class user_controller
         }
     }
 
+    async getUserId(req, res)
+    {
+        const decodedTokenData = JwtHelper.verifyAndParseToken(req.cookies.token);
+
+        if(decodedTokenData && decodedTokenData.id)
+        {
+            res.status(200).json({id: decodedTokenData.id});
+        }
+        else
+        {
+            badResp(res, 'can\'t take id');
+        }
+    }
+
+    async getUserIdFromCookie(cookies)
+    {
+        const decodedTokenData = JwtHelper.verifyAndParseToken(cookies.token);
+
+        if(decodedTokenData && decodedTokenData.id)
+        {
+            return decodedTokenData.id;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
 
     async getUserIdByLogin(login)
     {

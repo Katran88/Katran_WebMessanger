@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const ChatMember = require('../models/ChatMember');
-const ChatMessage = require('../models/ChatMessage');
 const Chat = require('../models/Chat');
 
 const user_controller = require('./user_controller');
+const chatMessage_controller = require('./chatMessage_controller');
 const { db_defaults } = require('../config');
 
 function badResp(res, message)
@@ -11,21 +11,12 @@ function badResp(res, message)
     res.status(400).json({message: message});
 }
 
-async function getUnreadMessagesAmountFromDB(chat_id)
-{
-    return ChatMessage.find({
-        $and:[
-            {chat_id: chat_id},
-            {message_status: db_defaults.message_status.unread}
-        ]}).countDocuments((err, amount) => { return amount; });
-}
-
 async function deleteChatFromDB(chat_id)
 {
     try
     {
         await ChatMember.deleteMany({chat_id: chat_id});
-        await ChatMessage.deleteMany({chat_id: chat_id});
+        await chatMessage_controller.deleteMessagesFromChat({chat_id: chat_id});
         await Chat.findByIdAndDelete(chat_id);
         return true;
     }
@@ -74,11 +65,6 @@ class chat_controller
         return await deleteChatFromDB(chat_id);
     }
 
-    async getUnreadMessagesAmount(chat_id)
-    {
-        return await getUnreadMessagesAmountFromDB(chat_id);
-    }
-
     async conversations(req, res)
     {
         const user_login = req.params['login'];
@@ -124,7 +110,7 @@ class chat_controller
                     chat_kind:              user_conversations[i].chat_kind,
                     chat_avatar_path:       user_conversations[i].chat_avatar_path,
                     members_amount:         await ChatMember.find({chat_id: user_conversations[i]._id}).countDocuments(),
-                    unread_messages_amount: await getUnreadMessagesAmountFromDB(user_conversations[i]._id)
+                    unread_messages_amount: await chatMessage_controller.getUnreadMessagesAmount(user_conversations[i]._id, user_id)
                 });
             }
 

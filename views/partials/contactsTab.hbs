@@ -21,7 +21,7 @@
         display: flex;
         vertical-align: baseline;
         background: var(--mainbackground-color);
-        transition: .3s ease;
+        transition: .5s ease;
         border-radius: 5px;
     }
 
@@ -38,20 +38,20 @@
 
     .contact:hover
     {
-        background: var(--blue-color);
+        /*background: var(--blue-color);*/
         cursor: pointer;
     }
 
     #current_contacts
     {
-        height: 402px;
+        height: 807px;
         overflow-y: auto;
         overflow-x: hidden;
     }
 
 </style>
 
-<div style=" margin-top: 10px;width: 303px; height: 70px">
+<div style=" margin-top: 10px; width: 303px; height: 70px">
     <div class="input-group mb-3">
         <input type="text" class="form-control" id="contactTabSearchInput" placeholder="Search for contact" oninput="contactSearch()">
         <button class="btn btn-secondary" type="button" onclick="contactSearch()" > <i class="bi bi-search" style="font-size: 15px";></i> </button>
@@ -170,12 +170,11 @@
                     contact: contacts_div.children[i].dataset.user_id,
                     username: contacts_div.children[i].dataset.username,
                     path_to_avatar: contacts_div.children[i].dataset.path_to_avatar,
-                    status: contacts_div.children[i].dataset.status,
-                    is_blocked: contacts_div.children[i].dataset.is_blocked,
+                    status: parseInt(contacts_div.children[i].dataset.status),
+                    is_blocked:  contacts_div.children[i].dataset.is_blocked == 'true',
                     unread_messages_amount: 0
                 };
 
-                contacts_div.removeChild(contacts_div.children[i]);
                 const login = await getUserLogin();
 
                 await sendRequest(`/api/${login}/addContact/${contact_login}`, JSON.stringify({}),
@@ -183,7 +182,8 @@
                         {
                             contactInfo.chat_id = respObj.chat_id;
                             console.log(contactInfo);
-                            addContactToHTML(respObj, false);
+                            addContactToHTML(contactInfo, false);
+                            contacts_div.removeChild(contacts_div.children[i]);
                         },
                         (badRespJSON) =>
                         {
@@ -198,7 +198,20 @@
     {
         if(selectedContactNode)
         {
-            console.log(selectedContactNode.dataset.login);
+            const login = await getUserLogin();
+
+            await sendRequest(`/api/${login}/deleteContact/${selectedContactNode.dataset.login}`, JSON.stringify({}),
+                    (respObj) =>
+                    {
+                        resetContactSelection();
+                        deleteContactHTMLbyId(respObj.chat_id);
+                    },
+                    (badRespJSON) =>
+                    {
+                        console.log(badRespJSON);
+                    }
+            );
+
         }
     }
 
@@ -214,8 +227,6 @@
                 for (let i = 0; i < contacts.length; i++)
                 {
                     addContactToHTML(contacts[i], true);
-                    addContactToHTML(contacts[i], true);
-                    addContactToHTML(contacts[i], true);
                 }
             },
             (badRespJSON) =>
@@ -228,6 +239,11 @@
     function clearContactsHTML()
     {
         contacts_div.innerHTML = "";
+    }
+
+    function deleteContactHTMLbyId(chat_id)
+    {
+        document.getElementById(chat_id).remove();
     }
 
     function clearSearchedContactsHTML()
@@ -245,9 +261,9 @@
     {
         contacts_div.innerHTML += `<div class='contact_div' id='${contactInfo.chat_id}' onclick="selectContact('${contactInfo.chat_id}')" style="display: ${visibleAfterCreation ? 'inline-block' : 'none'}"
                                                                                         data-login='${contactInfo.login}'
-                                                                                        data-chat_kind='0'
+                                                                                        data-chat_kind=0
                                                                                         data-contact='${contactInfo.contact}'
-                                                                                        data-username=${contactInfo.username}  >
+                                                                                        data-username='${contactInfo.username}'  >
                                         <div class='contact'>
                                             <img class='avatar-image' src='${contactInfo.path_to_avatar}' style='margin-right: 7px' >
                                             <div class='text'>
@@ -272,8 +288,8 @@
                                                                     data-login='${searchContactInfo.login}'
                                                                     data-username='${searchContactInfo.username}'
                                                                     data-path_to_avatar='${searchContactInfo.path_to_avatar}'
-                                                                    data-status='${searchContactInfo.status}'
-                                                                    data-is_blocked='${searchContactInfo.is_blocked}'>
+                                                                    data-status=${searchContactInfo.status}
+                                                                    data-is_blocked=${searchContactInfo.is_blocked}>
                                         <div class='contact'>
                                             <img class='avatar-image' src='${searchContactInfo.path_to_avatar}' style='margin-right: 7px' >
                                             <div class='text'>
@@ -287,6 +303,22 @@
                                         </div>
                                         <hr/>
                                     </div>`;
+    }
+
+    async function refreshUnreadMessagesAmount(chat_id)
+    {
+        await sendRequest(`/api/chat/countUnreadMessages`, JSON.stringify({chat_id: chat_id}),
+            (resObj) =>
+            {
+                const uma = document.getElementById(resObj.chat_id + '_uma');
+                uma.style.visibility = resObj.unread_messages_amount > 0 ? 'visible' : 'hidden';
+                uma.innerHTML = resObj.unread_messages_amount;
+            },
+            (badRespJSON) =>
+            {
+                console.log(badRespJSON);
+            }
+        );
     }
 
     function selectContact(chat_id)

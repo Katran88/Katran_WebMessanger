@@ -2,11 +2,11 @@
 <style>
     .chat-bubble
     {
-        display: flex; flex-direction: row-reverse;
+        display: flex;
         background: var(--chat-bubble-color);
         margin: 5px 10px;
         width: fit-content;
-        max-width: 450px;
+        max-width: 600px;
         border-radius: 9px;
         word-break: break-all;
     }
@@ -19,45 +19,143 @@
     }
 </style>
 
-<div class="chat-panel" id="chat_panel">
+<div class="chat-panel d-flex flex-column" id="chat_panel" style="margin-right: 12px">
 </div>
 
 <script>
     const chat_panel_div = document.getElementById('chat_panel');
+
+    async function sendMessage()
+    {
+        if(selectedContactNode)
+        {
+            let message = document.getElementById('userMessage').value;
+            const user_id = await getUserId();
+            let reqObj =
+            {
+                chat_id: selectedContactNode.id,
+                sender_id: user_id,
+                message: message,
+                message_kind: 0
+            };
+            document.getElementById('userMessage').value = "";
+            await sendRequest(`/api/chat/addMessage`, JSON.stringify(reqObj),
+                (respMessageInfo) =>
+                {
+                    addMessageToChatPanelHTML(respMessageInfo);
+                },
+                (badRespJSON) =>
+                {
+                    console.log(badRespJSON);
+                }
+            );
+        }
+    }
+
+    async function setMessageStatus_Read(message_id)
+    {
+        const user_id = await getUserId();
+        const sender_id = document.getElementById(message_id).dataset.sender_id;
+        if(user_id != sender_id)
+        {
+            await sendRequest(`/api/chat/readMessage`, JSON.stringify({ message_id : message_id }),
+                (respMessageInfo) =>
+                {
+                    setMessageStatus_Reaction(respMessageInfo.message_id, respMessageInfo.message_status);
+
+                },
+                (badRespJSON) =>
+                {
+                    console.log(badRespJSON);
+                }
+            );
+        }
+    }
+
+    function setMessageStatus_Reaction(message_id, message_status)
+    {
+        document.getElementById('m_status_' + message_id).innerHTML = getMessageStatusHTMLByStatus(message_status);
+        refreshUnreadMessagesAmount(document.getElementById(message_id).dataset.chat_id);
+    }
+
 
     function clearChatPanelHTML()
     {
         chat_panel_div.innerHTML = "";
     }
 
-    function refreshChatPanel(chat_id)
+    async function refreshChatPanel(chat_id)
     {
-        clearChatPanelHTML();
-        addMessageToChatPanelHTML({});
-        addMessageToChatPanelHTML({});
-        addMessageToChatPanelHTML({});
-        addMessageToChatPanelHTML({});
-        addMessageToChatPanelHTML({});
-        addMessageToChatPanelHTML({});
-        addMessageToChatPanelHTML({});
+        if(chat_id)
+        {
+            await sendRequest(`/api/chat/messages`, JSON.stringify({chat_id: chat_id}),
+                (messages) =>
+                {
+                    clearChatPanelHTML();
+
+                    for (let i = 0; i < messages.length; i++)
+                    {
+                        addMessageToChatPanelHTML(messages[i]);
+                    }
+                },
+                (badRespJSON) =>
+                {
+                    console.log(badRespJSON);
+                }
+            );
+        }
 
     }
 
-    function addMessageToChatPanelHTML(message_info)
+    async function addMessageToChatPanelHTML(message_info)
     {
-        chat_panel_div.innerHTML += `<div class="chat-bubble chat-bubble" style="float: right" >
-                                        <div style="margin: 5px; min-width: 70px; ">
-                                            <img class='avatar-image' src='/avatars/user1.jpg' style="margin-left: 20px" >
-                                            <div align='center'>
-                                                <label style="font-size: 14px; font-weight: bold" >00:00</label>
-                                                <i class="bi bi-check" style="color: var(--chat-bubble-unread); font-size: 17px;"></i>
-                                            </div>
+        const user_id = await getUserId();
 
-                                        </div>
+        let messageBodyHTML = "";
+        switch(message_info.message_kind)
+        {
+            case 0:
+                messageBodyHTML = `<div class='text' style="margin: 5px" >
+                                        <h6>
+                                            ${message_info.message}
+                                        </h6>
+                                    </div>`;
+                break;
+            case 1:
+                messageBodyHTML = ``;
+                break;
+        }
 
-                                        <div class='text' style="margin: 5px" >
-                                            <h6> 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message 1 message</h6>
-                                        </div>
-                                    </div>`
+        chat_panel_div.innerHTML += `<div id="${message_info.message_id}" data-sender_id='${message_info.sender_id}' data-chat_id="${message_info.chat_id}" class="p-2" onmouseenter="setMessageStatus_Read('${message_info.message_id}')" >
+                                        <div class="chat-bubble " style="float: ${user_id == message_info.sender_id ? 'right' : 'left'}; flex-direction: ${user_id == message_info.sender_id ? 'row-reverse' : 'row'}" >
+                                            <div style="margin: 5px; min-width: 70px; ">
+                                                <img class='avatar-image' src='${message_info.sender_avatar}' style="margin-left: 20px" >
+                                                <div align='center'>
+                                                    <label style="font-size: 14px; font-weight: bold" >${message_info.time}</label>
+                                                    <div id='${"m_status_" + message_info.message_id}'>
+                                                        ${getMessageStatusHTMLByStatus(message_info.message_status)}
+                                                    </div>
+                                                </div>
+                                            </div> ${messageBodyHTML} </div>
+                                    </div>`;
+
+        chat_panel_div.scrollTop = chat_panel_div.scrollHeight;
     }
+
+    function getMessageStatusHTMLByStatus(message_status)
+    {
+        switch(message_status)
+        {
+            case 0:
+                return `<i class="bi bi-check" style="color: var(--chat-bubble-unread); font-size: 17px;"></i>`;
+                break;
+            case 1:
+                return `<i class="bi bi-check-all" style="color: var(--chat-bubble-unread); font-size: 17px;"></i>`;
+                break;
+            case 2:
+                return `<i class="bi bi-check-all" style="color: var(--chat-bubble-read); font-size: 17px;"></i>`;
+                break;
+        }
+    }
+
 </script>

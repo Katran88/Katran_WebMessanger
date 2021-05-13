@@ -3,6 +3,7 @@ const UserInfo = require('../models/UserInfo');
 
 const { db_defaults } = require('../config');
 const user_controller = require('./user_controller');
+const chatMessage_controller = require('./chatMessage_controller');
 const chat_controller = require('./chat_controller');
 
 function badResp(res, message)
@@ -44,7 +45,7 @@ class contact_controller
 
             const contacts = await Contact.find({contact_owner: user_id}, 'contact chat_id');
 
-            let respObj = new Array();
+            let respObj = [];
 
             for (let i = 0; i < contacts.length; i++)
             {
@@ -59,7 +60,7 @@ class contact_controller
                     path_to_avatar: contactInfo.path_to_avatar,
                     status: contactInfo.status,
                     is_blocked: contactInfo.is_blocked,
-                    unread_messages_amount: await chat_controller.getUnreadMessagesAmount(contacts[i].chat_id)
+                    unread_messages_amount: await chatMessage_controller.getUnreadMessagesAmount(contacts[i].chat_id, user_id)
                 });
             }
 
