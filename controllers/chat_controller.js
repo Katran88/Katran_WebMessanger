@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
 const ChatMember = require('../models/ChatMember');
 const Chat = require('../models/Chat');
 
 const user_controller = require('./user_controller');
 const chatMessage_controller = require('./chatMessage_controller');
-const { db_defaults } = require('../config');
+const { db_defaults, root_folder, static_files_folder, avatars_folder } = require('../config');
 
 function badResp(res, message)
 {
@@ -29,6 +30,43 @@ async function deleteChatFromDB(chat_id)
 
 class chat_controller
 {
+    async chatInfo(req, res)
+    {
+        const { chat_id } = req.body;
+
+        if(chat_id)
+        {
+            let chatInfo = await Chat.findOne({_id: chat_id});
+
+            const conv_members = await ChatMember.find({chat_id: chat_id});
+
+            let conv_member_IDs = [];
+
+            for (let i = 0; i < conv_members.length; i++)
+            {
+                conv_member_IDs.push(conv_members[i].member_id);
+            }
+
+            res.status(200).json(
+            {
+                chat_id: chat_id,
+                chat_kind: chatInfo.chat_kind,
+                chat_title: chatInfo.chat_title,
+                chat_avatar_path: chatInfo.chat_avatar_path,
+                members: conv_member_IDs
+            });
+        }
+        else
+        {
+            badResp(res, 'body should contain chat_id');
+        }
+    }
+
+    async chatMembersAmount(chat_id)
+    {
+        return ChatMember.find({chat_id: chat_id}).countDocuments((err, amount) => { return amount; });
+    }
+
     async addChat(title, contactID_1, contactID_2)
     {
         const new_chat = new Chat({
@@ -63,6 +101,20 @@ class chat_controller
     async deleteChat(chat_id)
     {
         return await deleteChatFromDB(chat_id);
+    }
+
+    async getUserChats(user_id)
+    {
+       const user_chat_members = await ChatMember.find({member_id: user_id});
+
+        let chat_IDs = [];
+
+        for (let i = 0; i < user_chat_members.length; i++)
+        {
+            chat_IDs.push(user_chat_members[i].chat_id);
+        }
+
+        return chat_IDs;
     }
 
     async conversations(req, res)
@@ -124,7 +176,7 @@ class chat_controller
 
     async addConv(req, res)
     {
-        const { chat_title, chat_avatar_path, member_logins  } = req.body;
+        const { chat_title, chat_avatar_path, member_logins } = req.body;
 
         if(chat_title && chat_avatar_path && member_logins)
         {
@@ -153,7 +205,14 @@ class chat_controller
 
             await new_chat.save();
 
-            res.status(200).json({chat_id: new_chat._id});
+            let chat_member_IDs = [];
+
+            for (let i = 0; i < chat_members.length; i++)
+            {
+                chat_member_IDs.push(chat_members[i].member_id);
+            }
+
+            res.status(200).json( {chat_id: new_chat._id} );
         }
         else
         {
@@ -191,6 +250,16 @@ class chat_controller
                 if(amount == 0)
                 {
                     deleteChatFromDB(chat_id);
+                    const dir = root_folder + static_files_folder + avatars_folder + '\\';
+                    fs.readdir(dir, (err, files) => {
+                        files.forEach(file =>
+                        {
+                            if(file.split('.')[0] == chat_id)
+                            {
+                                fs.unlink(dir + file, () => {});
+                            }
+                        });
+                    });
                 }
             });
 

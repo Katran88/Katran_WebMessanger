@@ -68,12 +68,12 @@
             <div class="settings-tray">
                 <img src="{{profileAvatar}}" class="avatar-image">
                 <span class="settings-tray--right float-end">
-                        <i class="bi bi-people-fill" id="i_contactsTabDiv" onclick="refreshContactsTab()"></i>
-                        <i class="bi bi-chat-right-text-fill" id="i_createConvTabDiv" onclick="refreshCreateConvTab()"></i>
-                        <i class="bi bi-tools" id="i_settingsTabDiv" onclick="refreshSettingsTab()"></i>
-                        {{#if admin}}
-                        <i class="bi bi-layers" onclick="window.location.replace('/accessManagement')"></i>
-                        {{/if}}
+                    <i class="bi bi-people-fill" id="i_contactsTabDiv" onclick="refreshContactsTab()"></i>
+                    <i class="bi bi-chat-right-text-fill" id="i_createConvTabDiv" onclick="refreshCreateConvTab()"></i>
+                    <i class="bi bi-tools" id="i_settingsTabDiv" onclick="refreshSettingsTab()"></i>
+                    {{#if admin}}
+                    <i class="bi bi-layers" onclick="window.location.replace('/accessManagement')"></i>
+                    {{/if}}
                 </span>
             </div>
             <div id="contactsTabDiv" style="display: none">
@@ -90,13 +90,13 @@
                 function refreshContactsTab()
                 {
                     changeTab('contactsTabDiv');
-                    refreshContacts();
+                    refreshContactsAndConvs();
                 }
 
                 function refreshCreateConvTab()
                 {
                     changeTab('createConvTabDiv');
-                    //refreshContacts();
+                    refreshConvTab();
                 }
 
                 function refreshSettingsTab()
@@ -135,3 +135,6 @@
         </div>
     </div>
 </div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src='/htmlHelpers/clientSocket.js'></script>

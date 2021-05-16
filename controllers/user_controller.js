@@ -81,6 +81,19 @@ class user_controller
         }
     }
 
+    async setStatus(user_id, status)
+    {
+        if(user_id != undefined && status != undefined)
+        {
+            await UserInfo.updateOne({user_id: user_id}, {status: status});
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     async getUserIdFromCookie(cookies)
     {
         const decodedTokenData = JwtHelper.verifyAndParseToken(cookies.token);

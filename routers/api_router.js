@@ -19,6 +19,7 @@ router.post('/:login/searchForNewContacts',         contact_controller.searchFor
 router.post('/:login/conversations',                chat_controller.conversations);
 router.post('/addConv',                             chat_controller.addConv);
 router.post('/leaveFromConv',                       chat_controller.leaveFromConv);
+router.post('/chatInfo',                            chat_controller.chatInfo);
 
 //Messages
 router.post('/chat/messages',                       chatMessage_controller.messages);

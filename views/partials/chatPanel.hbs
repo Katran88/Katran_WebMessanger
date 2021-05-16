@@ -27,13 +27,13 @@
 
     async function sendMessage()
     {
-        if(selectedContactNode)
+        if(selectedChatNode)
         {
             let message = document.getElementById('userMessage').value;
             const user_id = await getUserId();
             let reqObj =
             {
-                chat_id: selectedContactNode.id,
+                chat_id: selectedChatNode.id,
                 sender_id: user_id,
                 message: message,
                 message_kind: 0
@@ -43,6 +43,7 @@
                 (respMessageInfo) =>
                 {
                     addMessageToChatPanelHTML(respMessageInfo);
+                    socket.emit('broadcast_message', respMessageInfo);
                 },
                 (badRespJSON) =>
                 {
@@ -62,7 +63,7 @@
                 (respMessageInfo) =>
                 {
                     setMessageStatus_Reaction(respMessageInfo.message_id, respMessageInfo.message_status);
-
+                    socket.emit('broadcast_read_message', document.getElementById(respMessageInfo.message_id).dataset.chat_id, respMessageInfo.message_id);
                 },
                 (badRespJSON) =>
                 {
@@ -77,7 +78,6 @@
         document.getElementById('m_status_' + message_id).innerHTML = getMessageStatusHTMLByStatus(message_status);
         refreshUnreadMessagesAmount(document.getElementById(message_id).dataset.chat_id);
     }
-
 
     function clearChatPanelHTML()
     {
@@ -103,6 +103,10 @@
                     console.log(badRespJSON);
                 }
             );
+        }
+        else
+        {
+            clearChatPanelHTML();
         }
 
     }

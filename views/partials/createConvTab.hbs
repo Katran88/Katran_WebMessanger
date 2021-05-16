@@ -1,29 +1,185 @@
-<div style="margin-top: 10px;width: 303px;">
-    <div class="input-group mb-3" style="margin-top: 10px;width: 303px;">
-        <input type="text" class="form-control" id="convTabSearchInput" placeholder="Search to add conv member" oninput="checkConvCheckInput()">
-        <button class="btn btn-secondary" type="button" onclick="convMemberSearch()" > <i class="bi bi-search" style="font-size: 15px";></i> </button>
+<style>
+    #conv_candidates
+    {
+        height: 565px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .candidate_div
+    {
+        width: 303px;
+        max-height: 66px;
+    }
+</style>
+
+<h2>Create conversation</h2>
+
+<div class="col" align="center">
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="conv_title" placeholder=" " required>
+        <label id="conv_title_label" >Conversation title</label>
     </div>
-    <hr/>
+    <form action="/upload" method="POST" id="conv_avatar_uploadForm" name="conv_avatar" enctype="multipart/form-data" style="height: 80px">
+        <label class="form-label">Choose conv avatar or leave it as default</label>
+        <input class="form-control" name="fileData" type="file" id="conv_avatar" accept="image/jpeg,image/png,image/gif" >
+        <input type="submit" style="visibility: collapse" id="conv_avatarSubmit"/>
+    </form>
+
+    <div style="display: flex; margin-left: 40px">
+        <h4>Members amount: </h4><h4 style="margin-left: 3px" id="members_counter" >1</h4>
+    </div>
+
+    <div id="conv_candidates" >
+
+    </div>
+
+    <div class="input-group mb-3" style="margin-left: 120px; width: 180px; height: 20px; margin-top: 20px">
+        <label  class="form-control" style="font-size: 23px" >Create</label>
+        <button class="btn btn-secondary" type="button" onclick="createConv()" >
+            <i class="bi bi-chat-right-text-fill" style="font-size: 23px; color: var(--blue-color)"></i>
+        </button>
+    </div>
 </div>
 
+
 <script>
-    const convTabSearchInput = document.getElementById('convTabSearchInput');
+    const conv_candidates = document.getElementById('conv_candidates');
+    const conv_titleInput = document.getElementById('conv_title');
+    const conv_titleLabel = document.getElementById('conv_title_label');
 
-    function checkConvCheckInput()
+    const conv_avatarSubmit = document.getElementById('conv_avatarSubmit');
+    const conv_uploadForm = document.getElementById('conv_avatar_uploadForm');
+
+    const membersCounter = document.getElementById('members_counter');
+
+    function clearConvHTML()
     {
-        const search_value = convTabSearchInput.value;
-        if(!search_input_field_reg.test(search_value))
+        conv_candidates.innerHTML = "";
+        membersCounter.innerHTML = "1";
+    }
+
+    async function refreshConvTab()
+    {
+        const login = await getUserLogin();
+
+        await sendRequest(`/api/${login}/contacts`, JSON.stringify({}),
+            (contacts) =>
+            {
+                clearConvHTML();
+
+                for (let i = 0; i < contacts.length; i++)
+                {
+                    addConvCandidateHTML(contacts[i]);
+                }
+            },
+            (badRespJSON) =>
+            {
+                console.log(badRespJSON);
+            }
+        );
+    }
+
+    async function createConv()
+    {
+        let title_value = conv_titleInput.value;
+
+        if(username_reg.test(title_value))
         {
-            console.log(search_value);
+            let member_logins = [];
+            member_logins.push(await getUserLogin());
+            for (let i = 0; i < conv_candidates.children.length; i++)
+            {
+                if( conv_candidates.children[i].className == 'candidate_div' &&
+                    conv_candidates.children[i].dataset.candidate_status == 'plus')
+                {
+                    member_logins.push(conv_candidates.children[i].dataset.login);
+                }
+            }
+
+            let reqObj =
+            {
+                chat_title: title_value,
+                chat_avatar_path: "\\avatars\\defaultAvatar.png",
+                member_logins: member_logins
+            }
+
+            await sendRequest(`/api/addConv`, JSON.stringify(reqObj),
+                async (respObj) =>
+                {
+                    if(document.getElementById('conv_avatar').value.length > 0)
+                    {
+                        conv_uploadForm.action += `?chat_id=${respObj.chat_id}`;
+                        conv_avatarSubmit.click();
+                    }
+
+                    await sendRequest(`/api/chatInfo`, JSON.stringify({chat_id: respObj.chat_id}),
+                        async (resp_chatInfo) =>
+                        {
+                            socket.emit('broadcast_add_conv', await getUserId(), resp_chatInfo.chat_id, resp_chatInfo.chat_title, resp_chatInfo.chat_avatar_path, resp_chatInfo.members);
+                        },
+                        (badRespJSON) =>
+                        {
+                            console.log(badRespJSON);
+                        }
+                    );
+
+                    refreshContactsTab();
+                },
+                (badRespJSON) =>
+                {
+                    console.log(badRespJSON);
+                }
+            );
+
+        }
+        else
+        {
+            conv_titleInput.value = ""
+            conv_titleLabel.style.color = 'red';
+            setTimeout(() =>
+            {
+                conv_titleLabel.style.color = 'black';
+            }, 1000);
         }
     }
 
-    function convMemberSearch()
+    function addConvCandidateHTML(candidateInfo)
     {
-        const search_value = convTabSearchInput.value;
-        if(!search_input_field_reg.test(search_value))
+        conv_candidates.innerHTML += `<div class='candidate_div' id='${candidateInfo.contact}'  data-login='${candidateInfo.login}' data-candidate_status='minus'
+                                                                                                data-username='${candidateInfo.username}'  >
+                                        <div class='contact'>
+                                            <img class='avatar-image' src='${candidateInfo.path_to_avatar}' style='margin-right: 7px' >
+                                            <div class='text'>
+                                                <h6>${candidateInfo.username}</h6>
+                                                ${getContactStatusHTML(candidateInfo.contact, candidateInfo.status, candidateInfo.is_blocked)}
+                                                <p class='text-muted' style='visibility: hidden'>placeholderplaceholder111111</p>
+                                            </div>
+                                            <div align='center' id="${candidateInfo.contact}_candidate_action">
+                                                <i class="bi bi-person-plus-fill" style="color: var(--dark-grey-color)" onclick="manageCandidate('${candidateInfo.contact}', true)"></i>
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                    </div>`;
+    }
+
+    function manageCandidate(candidate_id, include_exclude_candidate)
+    {
+        const candidateRef = document.getElementById(candidate_id);
+        const candidateAction = document.getElementById(candidate_id+'_candidate_action');
+
+        if(include_exclude_candidate)
         {
-            console.log(search_value);
+            candidateRef.dataset.candidate_status = 'plus';
+            candidateAction.innerHTML = `<i class="bi bi-person-dash-fill" style="color: var(--dark-grey-color)" onclick="manageCandidate('${candidate_id}', false)"></i>`;
+            membersCounter.innerHTML = (parseInt(membersCounter.innerHTML) + 1).toString();
+        }
+        else
+        {
+            candidateRef.dataset.candidate_status = 'minus';
+            candidateAction.innerHTML = `<i class="bi bi-person-plus-fill" style="color: var(--dark-grey-color)" onclick="manageCandidate('${candidate_id}', true)"></i>`;
+            membersCounter.innerHTML = (parseInt(membersCounter.innerHTML) > 1 ? parseInt(membersCounter.innerHTML) - 1 : 1).toString();
         }
     }
+
 </script>

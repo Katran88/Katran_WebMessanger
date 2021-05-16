@@ -6,6 +6,7 @@ const file_controller = require('../controllers/file_controller');
 const JwtHelper = require('../helpers/jwtHelper');
 const User = require('../models/User');
 const UserInfo = require('../models/UserInfo');
+const Chat = require('../models/Chat');
 
 const storageConfig = multer.diskStorage({
     destination: (req, file, callBack) =>
@@ -19,14 +20,24 @@ const storageConfig = multer.diskStorage({
     {
         if(file)
         {
-            const { id } = JwtHelper.verifyAndParseToken(req.cookies.token);
-            const user = await User.findById(id);
-            const avatar_name = user.login + path.extname(file.originalname);
-            callBack(null, avatar_name);
+            let avatar_name = "";
+            if(req.query.chat_id != undefined)
+            {
+                avatar_name = req.query.chat_id + path.extname(file.originalname);
+                callBack(null, avatar_name);
 
-            await UserInfo.updateOne({user_id: id}, {path_to_avatar: avatars_folder + '\\' + avatar_name});
+                await Chat.updateOne({_id: req.query.chat_id}, {chat_avatar_path: avatars_folder + '\\' + avatar_name});
+            }
+            else
+            {
+                const { id } = JwtHelper.verifyAndParseToken(req.cookies.token);
+                const user = await User.findById(id);
+                avatar_name = user.login + path.extname(file.originalname);
+                callBack(null, avatar_name);
+
+                await UserInfo.updateOne({user_id: id}, {chat_avatar_path: avatars_folder + '\\' + avatar_name});
+            }
         }
-
     }
 });
 
