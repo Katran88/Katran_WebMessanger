@@ -35,7 +35,7 @@ const storageConfig = multer.diskStorage({
                 avatar_name = user.login + path.extname(file.originalname);
                 callBack(null, avatar_name);
 
-                await UserInfo.updateOne({user_id: id}, {chat_avatar_path: avatars_folder + '\\' + avatar_name});
+                await UserInfo.updateOne({user_id: id}, {path_to_avatar: avatars_folder + '\\' + avatar_name});
             }
         }
     }

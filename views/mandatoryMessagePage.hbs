@@ -1,22 +1,56 @@
 <!-- Modal -->
 {{#if permissionDenied}}
-    <button type="button" id="permissionDenied_modalTrigger" data-bs-toggle="modal" data-bs-target="#permissionDenied_modal" style="visibility: collapse"></button>
-    <div class="modal fade" id="permissionDenied_modal" tabindex="-1" aria-labelledby="permissionDenied_modalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header"> <h5 class="modal-title" id="permissionDenied_modalLabel">Ooops!</h5> </div>
-                <div class="modal-body">{{permissionDenied}}</div>
-            </div>
+<button type="button" id="permissionDenied_modalTrigger" data-bs-toggle="modal" data-bs-target="#permissionDenied_modal" style="visibility: collapse"></button>
+<div class="modal fade" id="permissionDenied_modal" tabindex="-1" aria-labelledby="permissionDenied_modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"> <h5 class="modal-title" id="permissionDenied_modalLabel">Ooops!</h5> </div>
+            <div class="modal-body">{{permissionDenied}}</div>
         </div>
     </div>
-    <script defer>
-        document.getElementById('permissionDenied_modalTrigger').click();
-    </script>
-{{/if}}
+</div>
 
 <script>
     setTimeout(()=>
     {
-        window.location.replace('/');
-    }, 3000);
+        document.getElementById('permissionDenied_modalTrigger').click();
+        setTimeout(()=>
+        {
+            window.location.replace('/');
+        }, 5000);
+    }, 100);
 </script>
+{{/if}}
+
+{{#if block_modalMessage}}
+<button type="button" id="block_modalTrigger" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="visibility: collapse"></button>
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Ooops!</h5>
+            </div>
+            <div class="modal-body" align="center">
+                <i class="bi bi-emoji-dizzy" style="font-size: 150px; color: #6d9fee"></i>
+                <div class="modal-body" style="font-size: 20px" >{{block_modalMessage}}</div>
+            </div>
+            <div class="modal-footer" align="center">
+                <button type="button" class="btn btn-primary" onclick="window.location='/login'" >Understood</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    setTimeout(()=>
+    {
+        document.getElementById('block_modalTrigger').click();
+        /*setTimeout(()=>
+        {
+            window.location.replace('/');
+        }, 5000);*/
+    }, 100);
+</script>
+{{/if}}

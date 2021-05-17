@@ -10,6 +10,11 @@ class mandatoryMessage_controller
             renderObj.permissionDenied = 'You have no permission for this page. You will redirect on main page after a few seconds';
         }
 
+        if(req.query.blocked != undefined)
+        {
+            renderObj.block_modalMessage = 'You have been blocked by administrator';
+        }
+
         res.render('mandatoryMessagePage', renderObj);
     }
 }

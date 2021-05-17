@@ -7,14 +7,14 @@ async function connectToMessenger()
     socket.emit('user-connect', user_id);
 }
 
-socket.on('user-connected', (user_id) =>
+socket.on('user-connected', (user_id, is_blocked) =>
 {
-    refreshContactStatus(user_id, 1);
+    refreshContactStatus(user_id, 1, is_blocked);
 });
 
-socket.on('user-disconnected', (user_id) =>
+socket.on('user-disconnected', (user_id, is_blocked) =>
 {
-    refreshContactStatus(user_id, 0);
+    refreshContactStatus(user_id, 0, is_blocked);
 });
 
 socket.on('receive-message', (messageInfo) =>
@@ -55,6 +55,14 @@ socket.on('receive-delete-contact', (chat_id) =>
 
 socket.on('receive-new-conv', (chat_id, chat_title, chat_avatar_path, members_amount) =>
 {
+    console.log({
+        chat_id: chat_id,
+        chat_kind: 1,
+        chat_title: chat_title,
+        chat_avatar_path: chat_avatar_path,
+        members_amount: members_amount,
+        unread_messages_amount: 0
+    });
     addConvToHTML({
         chat_id: chat_id,
         chat_kind: 1,
@@ -68,6 +76,20 @@ socket.on('receive-new-conv', (chat_id, chat_title, chat_avatar_path, members_am
 socket.on('user_left_conv', (chat_id, members_amount) =>
 {
     refreshChatMembersAmount(chat_id, members_amount);
+});
+
+socket.on('user_blockStatusChanged', async (user_id, status, new_block_status) =>
+{
+    const receiver_id = await getUserId();
+
+    if(receiver_id == user_id)
+    {
+        window.location = 'mandatoryMessage/?blocked';
+    }
+    else
+    {
+        refreshContactStatus(user_id, status, new_block_status);
+    }
 });
 
 connectToMessenger();

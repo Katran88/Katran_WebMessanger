@@ -8,24 +8,24 @@ const haveNoPermissionReaction = (res) =>
 module.exports = (roles) =>
 {
     return  function (req, res, next)
+        {
+            try
             {
-                try
-                {
-                    const { role: visitorRole } = JwtHelper.verifyAndParseToken(req.cookies.token);
+                const { role: visitorRole } = JwtHelper.verifyAndParseToken(req.cookies.token);
 
-                    if(roles.includes(visitorRole))
-                    {
-                        next();
-                    }
-                    else
-                    {
-                        haveNoPermissionReaction(res);
-                    }
-                }
-                catch (err)
+                if(roles.includes(visitorRole))
                 {
-                    console.log(err);
+                    next();
+                }
+                else
+                {
                     haveNoPermissionReaction(res);
                 }
             }
+            catch (err)
+            {
+                console.log(err);
+                haveNoPermissionReaction(res);
+            }
+        }
 }

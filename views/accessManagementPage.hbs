@@ -1,1 +1,156 @@
-<h1>Super secret page</h1>
+<link type="text/css" rel="stylesheet" href="/bootstrap/css/generalStyles.css" />
+<style>
+
+    .container-sm
+    {
+        margin-top: 2%;
+        width: 380px;
+        height: 700px;
+        background: #eaeaea;
+        padding: 10px;
+        border-radius: 7px;
+        box-shadow: 0 0 10px var(--blue-color);
+    }
+
+    #access_m_users
+    {
+        width: 180px;
+        height: 445px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .am_user
+    {
+        height: 60px;
+        max-height: 60px;
+        padding: 5px 5px;
+        display: flex;
+        vertical-align: baseline;
+        background: var(--mainbackground-color);
+        transition: .5s ease;
+        border-radius: 5px;
+    }
+
+    i:hover
+    {
+        cursor: pointer;
+    }
+
+    .btn
+    {
+        box-shadow: 0 0 10px var(--blue-color);
+    }
+
+</style>
+
+<div class="container-sm">
+    <div class="row">
+        <div class="col" align="center">
+            <img src="/images/Katran.png" width="100px" height="100px" style="margin-bottom: 20px"/>
+            <div align="center">
+                <h4>Access management</h4>
+                <br/>
+            </div>
+        </div>
+    </div>
+
+    <div align="center">
+        <div id="access_m_users" align="center">
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col" align="right">
+            <br/>
+            <button type="button" onclick="location.href = '/';" class="btn btn-primary btn-sm">Back</button>
+        </div>
+    </div>
+</div>
+
+<script src='/htmlHelpers/regex.js'></script>
+<script src='/htmlHelpers/requestHelper.js'></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+</script>
+
+<script>
+    setTimeout(() =>
+    {
+        refreshAccessManagementTab();
+    }, 100)
+
+    const access_m_users = document.getElementById('access_m_users');
+
+    function clearAM_list()
+    {
+        access_m_users.innerHTML = "";
+    }
+
+    async function refreshAccessManagementTab()
+    {
+        clearAM_list();
+        await sendRequest(`/accessManagement/getAllUsersInfo`, JSON.stringify({}),
+            (foundUsers) =>
+            {
+                for (let i = 0; i < foundUsers.length; i++)
+                {
+                    add_AM_userHTML(foundUsers[i]);
+                }
+            },
+            (badRespJSON) =>
+            {
+                console.log(badRespJSON);
+            }
+        );
+    }
+
+    async function manageUserAccess(user_id, new_block_status)
+    {
+        await sendRequest(`/accessManagement/manageUserAccess`, JSON.stringify({user_id: user_id, block_unblockFlag: new_block_status}),
+            (respObj) =>
+            {
+                refresh_am_userActionByHisBlockStatus(respObj.user_id, respObj.is_blocked);
+                socket.emit('broadcast_user_blockStatusChanged', respObj.user_id, respObj.is_blocked);
+            },
+            (badRespJSON) =>
+            {
+                console.log(badRespJSON);
+            }
+        );
+    }
+
+    function add_AM_userHTML(userInfo)
+    {
+        access_m_users.innerHTML += `<div class='AM_contact_div' id='${userInfo.user_id}'>
+                                        <div class='am_user'>
+                                            <img class='avatar-image' src='${userInfo.path_to_avatar}' style='margin-right: 7px' >
+                                            <div class='text'>
+                                                <h6>${userInfo.username}</h6>
+                                                <p class='text-muted' style='visibility: hidden'>placeholder</p>
+                                            </div>
+                                            <div align='center' id="${userInfo.user_id}_amuser"  >
+                                                ${get_am_userActionByHisBlockStatus(userInfo.user_id, userInfo.is_blocked)}
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                    </div>`;
+    }
+
+    function refresh_am_userActionByHisBlockStatus(user_id, block_status)
+    {
+        const userElRef = document.getElementById(user_id + '_amuser');
+        if(userElRef)
+        {
+            userElRef.innerHTML = get_am_userActionByHisBlockStatus(user_id, block_status);
+        }
+    }
+
+    function get_am_userActionByHisBlockStatus(user_id, block_status)
+    {
+       return `<i class="bi ${block_status ? 'bi-person-check' : 'bi-person-x' }" style="color: var(--blue-color); font-size: 30px " onclick="manageUserAccess('${user_id}', ${!block_status})"></i>`;
+    }
+
+</script>

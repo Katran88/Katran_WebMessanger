@@ -82,6 +82,7 @@
 
     async function createConv()
     {
+
         let title_value = conv_titleInput.value;
 
         if(username_reg.test(title_value))
@@ -109,8 +110,11 @@
                 {
                     if(document.getElementById('conv_avatar').value.length > 0)
                     {
-                        conv_uploadForm.action += `?chat_id=${respObj.chat_id}`;
-                        conv_avatarSubmit.click();
+                        setTimeout(()=>
+                        {
+                            conv_uploadForm.action += `?chat_id=${respObj.chat_id}`;
+                            conv_avatarSubmit.click();
+                        }, 1000);
                     }
 
                     await sendRequest(`/api/chatInfo`, JSON.stringify({chat_id: respObj.chat_id}),

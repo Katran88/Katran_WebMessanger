@@ -51,6 +51,12 @@ class user_controller
         return JSON.stringify( await getUserInfoFromDBbyLogin(login) );
     }
 
+    async getInfoJSONbyID(user_id)
+    {
+        const user = await User.findOne({_id: user_id});
+        return JSON.stringify( await getUserInfoFromDBbyLogin(user.login) );
+    }
+
     async getUserLogin(req, res)
     {
         const decodedTokenData = JwtHelper.verifyAndParseToken(req.cookies.token);

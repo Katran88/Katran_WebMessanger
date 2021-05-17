@@ -2,13 +2,18 @@ const express = require('express');
 const app = express();
 const expressHBS = require("express-handlebars");
 const mongoose = require('mongoose');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const { port, database, root_folder, db_defaults, static_files_folder } = require('./config');
 
-const http = require('http');
-const http_server = http.createServer(app);
+const http = require('https');
+const httpsOptions = {
+    key: fs.readFileSync('./security/cert.key'),
+    cert: fs.readFileSync('./security/cert.pem')
+}
+const https_server = http.createServer(httpsOptions, app);
 const { Server } = require("socket.io");
-const io = new Server(http_server);
+const io = new Server(https_server);
 
 const login_router = require('./routers/login_router');
 const main_router = require('./routers/main_router');
@@ -44,7 +49,7 @@ app.use('/', [authMiddleware], main_router);
 app.use('/mandatoryMessage', mandatoryMessage_router);
 app.use('/accessManagement', [roleMiddleware([db_defaults.role.admin])], admin_router);
 
-http_server.listen(port, async () =>
+https_server.listen(port, async () =>
 {
     await mongoose.connect(connection_uri, {useNewUrlParser: true, useUnifiedTopology: true });
     console.log(`Listening to http://localhost:${port}`);
@@ -61,36 +66,42 @@ io.on('connection', (socket) =>
 {
     socket.on('user-connect', async (user_id) =>
     {
-        let connected_user_chats = await chatMember_controller.getUserChats(user_id);
-        for (let i = 0; i < connected_user_chats.length; i++)
+        const connected_userInfo = JSON.parse(await user_controller.getInfoJSONbyID(user_id));
+        if(!connected_userInfo.is_blocked)
         {
-            let chat_id_string = connected_user_chats[i].toString();
-            socket.join(chat_id_string);
-        }
-
-        for (let i = 0; i < connected_sockets.length; i++)
-        {
-            if(connected_sockets[i].user_id == user_id)
+            let connected_user_chats = await chatMember_controller.getUserChats(user_id);
+            for (let i = 0; i < connected_user_chats.length; i++)
             {
-                connected_sockets[i].socket = socket;
-                socket.broadcast.emit('user-connected', user_id);
-                user_controller.setStatus(user_id, 1);
-                return;
+                let chat_id_string = connected_user_chats[i].toString();
+                socket.join(chat_id_string);
             }
-        }
 
-        connected_sockets.push({socket: socket, user_id: user_id});
-        user_controller.setStatus(user_id, 1);
-        socket.broadcast.emit('user-connected', user_id);
+            for (let i = 0; i < connected_sockets.length; i++)
+            {
+                if(connected_sockets[i].user_id == user_id)
+                {
+                    connected_sockets[i].socket = socket;
+                    socket.broadcast.emit('user-connected', user_id, connected_userInfo.is_blocked);
+                    user_controller.setStatus(user_id, 1);
+                    return;
+                }
+            }
+
+            connected_sockets.push({socket: socket, user_id: user_id});
+            user_controller.setStatus(user_id, 1);
+            socket.broadcast.emit('user-connected', user_id);
+        }
     });
 
-    socket.on('disconnect', () =>
+    socket.on('disconnect', async () =>
     {
         for (let i = 0; i < connected_sockets.length; i++)
         {
             if(socket.id == connected_sockets[i].socket.id)
             {
-                socket.broadcast.emit('user-disconnected', connected_sockets[i].user_id);
+                const connected_userInfo = JSON.parse(await user_controller.getInfoJSONbyID(connected_sockets[i].user_id));
+
+                socket.broadcast.emit('user-disconnected', connected_sockets[i].user_id, connected_userInfo.is_blocked);
                 user_controller.setStatus(connected_sockets[i].user_id, 0);
                 connected_sockets.slice(i, 1);
                 break;
@@ -173,5 +184,11 @@ io.on('connection', (socket) =>
         }
         const members_amount = await chat_controller.chatMembersAmount(chat_id);
         socket.to(chat_id).emit('user_left_conv', chat_id, members_amount);
+    });
+
+    socket.on('broadcast_user_blockStatusChanged', async (user_id, new_block_status) =>
+    {
+        const connected_userInfo = JSON.parse(await user_controller.getInfoJSONbyID(user_id));
+        socket.broadcast.emit('user_blockStatusChanged', user_id, connected_userInfo.status, new_block_status);
     });
 })

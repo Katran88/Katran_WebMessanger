@@ -226,11 +226,12 @@
             const login = await getUserLogin();
             if(selectedChatNode.dataset.chat_kind == 0)
             {
-
+                console.log(`/api/${login}/deleteContact/${selectedChatNode.dataset.login}`);
                 await sendRequest(`/api/${login}/deleteContact/${selectedChatNode.dataset.login}`, JSON.stringify({}),
                     async (respObj) =>
                     {
                         const user_id = await getUserId();
+                        console.log('deleted')
                         socket.emit('broadcast_delete_contact', respObj.chat_id, user_id, selectedChatNode.dataset.contact);
                         resetChatSelection();
                         deleteChatHTMLbyId(respObj.chat_id);
@@ -320,7 +321,7 @@
     {
         contacts_div.innerHTML += `<div class='contact_div' id='${contactInfo.chat_id}' onclick="selectChat('${contactInfo.chat_id}')" style="display: ${visibleAfterCreation ? 'inline-block' : 'none'}"
                                                                                         data-login='${contactInfo.login}'
-                                                                                        data-chat_kind=${contactInfo.chat_kind}
+                                                                                        data-chat_kind=0
                                                                                         data-contact='${contactInfo.contact}'
                                                                                         data-username='${contactInfo.username}'  >
                                         <div class='contact'>
@@ -343,7 +344,7 @@
     function addConvToHTML(convInfo, visibleAfterCreation)
     {
         contacts_div.innerHTML += `<div class='contact_div' id='${convInfo.chat_id}' onclick="selectChat('${convInfo.chat_id}')" style="display: ${visibleAfterCreation ? 'inline-block' : 'none'}"
-                                                                                        data-chat_kind=${convInfo.chat_kind}
+                                                                                        data-chat_kind=1
                                                                                         data-username='${convInfo.chat_title}'  >
                                         <div class='contact'>
                                             <img class='avatar-image' src='${convInfo.chat_avatar_path}' style='margin-right: 7px' >
@@ -384,16 +385,17 @@
                                     </div>`;
     }
 
-
-
     async function refreshUnreadMessagesAmount(chat_id)
     {
         await sendRequest(`/api/chat/countUnreadMessages`, JSON.stringify({chat_id: chat_id}),
             (resObj) =>
             {
                 const uma = document.getElementById(resObj.chat_id + '_uma');
-                uma.style.visibility = resObj.unread_messages_amount > 0 ? 'visible' : 'hidden';
-                uma.innerHTML = resObj.unread_messages_amount;
+                if(uma)
+                {
+                    uma.style.visibility = resObj.unread_messages_amount > 0 ? 'visible' : 'hidden';
+                    uma.innerHTML = resObj.unread_messages_amount;
+                }
             },
             (badRespJSON) =>
             {
@@ -424,21 +426,33 @@
         refreshChatPanel(null);
     }
 
-    function refreshContactStatus(user_id, status)
+    function refreshContactStatus(user_id, status, new_blocked_status)
     {
         let contact_statusHTML = document.getElementById(`${user_id}_s`);
-        if(contact_statusHTML && contact_statusHTML.dataset.status != 'blocked')
+
+        if(contact_statusHTML)
         {
-            switch (status)
+            if(new_blocked_status)
             {
-                case 0:
-                    contact_statusHTML.dataset.status = 'offline';
-                    contact_statusHTML.innerHTML = 'Offline';
-                    break;
-                case 1:
-                    contact_statusHTML.dataset.status = 'online';
-                    contact_statusHTML.innerHTML = 'Online';
-                    break;
+                contact_statusHTML.dataset.status = 'blocked';
+                contact_statusHTML.innerHTML = 'User blocked';
+            }
+            else
+            {
+                if(contact_statusHTML && contact_statusHTML.dataset.status != 'blocked' || !new_blocked_status)
+                {
+                    switch (status)
+                    {
+                        case 0:
+                            contact_statusHTML.dataset.status = 'offline';
+                            contact_statusHTML.innerHTML = 'Offline';
+                            break;
+                        case 1:
+                            contact_statusHTML.dataset.status = 'online';
+                            contact_statusHTML.innerHTML = 'Online';
+                            break;
+                    }
+                }
             }
         }
     }
