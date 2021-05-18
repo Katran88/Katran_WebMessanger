@@ -49,10 +49,10 @@ app.use('/', [authMiddleware], main_router);
 app.use('/mandatoryMessage', mandatoryMessage_router);
 app.use('/accessManagement', [roleMiddleware([db_defaults.role.admin])], admin_router);
 
-https_server.listen(port, async () =>
+https_server.listen( process.env.PORT || port, async () =>
 {
     await mongoose.connect(connection_uri, {useNewUrlParser: true, useUnifiedTopology: true });
-    console.log(`Listening to http://localhost:${port}`);
+    console.log(`Listening to http://localhost:${process.env.PORT || port}`);
 });
 
 //------------------------------ Socket
