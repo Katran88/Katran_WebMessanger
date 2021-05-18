@@ -6,7 +6,7 @@ const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const { port, database, root_folder, db_defaults, static_files_folder } = require('./config');
 
-const http = require('https');
+const http = require('http'); //require('https');
 const httpsOptions = {
     key: fs.readFileSync('./security/cert.key'),
     cert: fs.readFileSync('./security/cert.pem')
@@ -49,7 +49,7 @@ app.use('/', [authMiddleware], main_router);
 app.use('/mandatoryMessage', mandatoryMessage_router);
 app.use('/accessManagement', [roleMiddleware([db_defaults.role.admin])], admin_router);
 
-http_server.listen( process.env.PORT || port, async () =>
+http_server.listen(process.env.PORT || port, async () =>
 {
     await mongoose.connect(connection_uri, {useNewUrlParser: true, useUnifiedTopology: true });
     console.log(`Listening to http://localhost:${process.env.PORT || port}`);
