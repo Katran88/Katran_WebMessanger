@@ -6,6 +6,8 @@ module.exports =
     port: 8000,
     token_secret:  'e912cd7942a0fdb2',
     password_salt: 8,
+    crypto_secret: 'd7942a0VC61jmV54db2rIYu1545x4TlY',
+    crypto_iv: '60iP0h6vJoEa',
     database:
     {
         DB_USERNAME:    'db_user',

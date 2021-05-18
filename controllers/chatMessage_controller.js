@@ -1,8 +1,5 @@
-const mongoose = require('mongoose');
-const ChatMember = require('../models/ChatMember');
 const ChatMessage = require('../models/ChatMessage');
-const Chat = require('../models/Chat');
-
+const cryptoHelper = require('../helpers/cryptoHelper');
 const user_controller = require('./user_controller');
 const { db_defaults } = require('../config');
 
@@ -50,7 +47,7 @@ class chat_controller
 
             for (let i = 0; i < messages.length; i++)
             {
-                let messageBody = messages[i].message;
+                let messageBody = cryptoHelper.decrypt(messages[i].message);
 
                 const sender_login = await user_controller.getUserLoginById(messages[i].sender_id);
                 const sender_avatar = JSON.parse(await user_controller.getInfoJSON(sender_login)).path_to_avatar;
@@ -94,7 +91,7 @@ class chat_controller
 
         if(reqBody.chat_id && reqBody.sender_id && reqBody.message && reqBody.message_kind != undefined)
         {
-            let messageBody = reqBody.message;
+            let messageBody = cryptoHelper.encrypt(reqBody.message);
 
             let chat_message = new ChatMessage({
                 chat_id: reqBody.chat_id,
