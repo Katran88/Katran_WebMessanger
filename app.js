@@ -11,9 +11,9 @@ const httpsOptions = {
     key: fs.readFileSync('./security/cert.key'),
     cert: fs.readFileSync('./security/cert.pem')
 }
-const https_server = http.createServer(httpsOptions, app);
+const http_server = http.createServer(/*httpsOptions, */app);
 const { Server } = require("socket.io");
-const io = new Server(https_server);
+const io = new Server(http_server);
 
 const login_router = require('./routers/login_router');
 const main_router = require('./routers/main_router');
@@ -49,7 +49,7 @@ app.use('/', [authMiddleware], main_router);
 app.use('/mandatoryMessage', mandatoryMessage_router);
 app.use('/accessManagement', [roleMiddleware([db_defaults.role.admin])], admin_router);
 
-https_server.listen( process.env.PORT || port, async () =>
+http_server.listen( process.env.PORT || port, async () =>
 {
     await mongoose.connect(connection_uri, {useNewUrlParser: true, useUnifiedTopology: true });
     console.log(`Listening to http://localhost:${process.env.PORT || port}`);
