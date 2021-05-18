@@ -6,12 +6,12 @@ const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const { port, database, root_folder, db_defaults, static_files_folder } = require('./config');
 
-const http = require('http'); //require('https');
+const http = require('https');
 const httpsOptions = {
     key: fs.readFileSync('./security/cert.key'),
     cert: fs.readFileSync('./security/cert.pem')
 }
-const http_server = http.createServer(/*httpsOptions, */app);
+const http_server = http.createServer(httpsOptions, app);
 const { Server } = require("socket.io");
 const io = new Server(http_server);
 
@@ -52,7 +52,7 @@ app.use('/accessManagement', [roleMiddleware([db_defaults.role.admin])], admin_r
 http_server.listen(process.env.PORT || port, async () =>
 {
     await mongoose.connect(connection_uri, {useNewUrlParser: true, useUnifiedTopology: true });
-    console.log(`Listening to http://localhost:${process.env.PORT || port}`);
+    console.log(`Listening to https://localhost:${process.env.PORT || port}`);
 });
 
 //------------------------------ Socket
