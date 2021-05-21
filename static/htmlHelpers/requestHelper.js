@@ -11,17 +11,11 @@ function sendRequest(url, body, ok_callback, bad_callback)
         {
             if(response.ok)
             {
-                response.json().then(data =>
-                {
-                    ok_callback(data);
-                });
+                response.json().then(data => { ok_callback(data); });
             }
             else
             {
-                response.json().then(data =>
-                {
-                    bad_callback(data);
-                });
+                response.json().then(data => { bad_callback(data); });
             }
         }).catch((err)=>{ bad_callback(err); });
 }

@@ -44,8 +44,8 @@ app.set('view engine', 'hbs');
 app.use('/login', login_router);
 app.use('/registration', reg_router);
 app.use('/upload', file_router);
-app.use('/api', api_router);
 app.use('/', [authMiddleware], main_router);
+app.use('/api', api_router);
 app.use('/mandatoryMessage', mandatoryMessage_router);
 app.use('/accessManagement', [roleMiddleware([db_defaults.role.admin])], admin_router);
 
@@ -64,37 +64,27 @@ let connected_sockets = [];
 
 io.on('connection', (socket) =>
 {
-    socket.on('user-connect', async (user_id) =>
-    {
+    socket.on('user-connect', async (user_id) => {
         const connected_userInfo = JSON.parse(await user_controller.getInfoJSONbyID(user_id));
-        if(!connected_userInfo.is_blocked)
-        {
+        if(!connected_userInfo.is_blocked) {
             let connected_user_chats = await chatMember_controller.getUserChats(user_id);
-            for (let i = 0; i < connected_user_chats.length; i++)
-            {
+            for (let i = 0; i < connected_user_chats.length; i++) {
                 let chat_id_string = connected_user_chats[i].toString();
                 socket.join(chat_id_string);
             }
-
-            for (let i = 0; i < connected_sockets.length; i++)
-            {
-                if(connected_sockets[i].user_id == user_id)
-                {
+            for (let i = 0; i < connected_sockets.length; i++){
+                if(connected_sockets[i].user_id == user_id) {
                     connected_sockets[i].socket = socket;
                     socket.broadcast.emit('user-connected', user_id, connected_userInfo.is_blocked);
                     user_controller.setStatus(user_id, 1);
-                    return;
-                }
+                    return; }
             }
-
             connected_sockets.push({socket: socket, user_id: user_id});
             user_controller.setStatus(user_id, 1);
             socket.broadcast.emit('user-connected', user_id);
         }
     });
-
-    socket.on('disconnect', async () =>
-    {
+    socket.on('disconnect', async () => {
         for (let i = 0; i < connected_sockets.length; i++)
         {
             if(socket.id == connected_sockets[i].socket.id)
@@ -108,19 +98,13 @@ io.on('connection', (socket) =>
             }
         }
     })
-
-    socket.on('broadcast_message', (messageInfo) =>
-    {
+    socket.on('broadcast_message', (messageInfo) => {
         socket.to(messageInfo.chat_id).emit('receive-message', messageInfo);
     });
-
-    socket.on('broadcast_read_message', (chat_id, message_id) =>
-    {
+    socket.on('broadcast_read_message', (chat_id, message_id) => {
         socket.to(chat_id).emit('receive-read-message', chat_id, message_id);
     });
-
-    socket.on('broadcast_add_contact', (other_contact_id, contactInfoForOtherContact) =>
-    {
+    socket.on('broadcast_add_contact', (other_contact_id, contactInfoForOtherContact) => {
         socket.join(contactInfoForOtherContact.chat_id);
 
         for (let i = 0; i < connected_sockets.length; i++)
@@ -133,9 +117,7 @@ io.on('connection', (socket) =>
             }
         }
     });
-
-    socket.on('broadcast_delete_contact', (chat_id, initer_id, contact_id) =>
-    {
+    socket.on('broadcast_delete_contact', (chat_id, initer_id, contact_id) => {
         for (let i = 0; i < connected_sockets.length; i++)
         {
             if( contact_id == connected_sockets[i].user_id ||
@@ -151,9 +133,7 @@ io.on('connection', (socket) =>
             }
         }
     });
-
-    socket.on('broadcast_add_conv', (creator_id, chat_id, chat_title, chat_avatar_path, members) =>
-    {
+    socket.on('broadcast_add_conv', (creator_id, chat_id, chat_title, chat_avatar_path, members) => {
         for (let i = 0; i < connected_sockets.length; i++)
         {
             for (let j = 0; j < members.length; j++)
@@ -171,9 +151,7 @@ io.on('connection', (socket) =>
             }
         }
     });
-
-    socket.on('broadcast_leave_conv', async (chat_id, left_user_id) =>
-    {
+    socket.on('broadcast_leave_conv', async (chat_id, left_user_id) => {
         for (let i = 0; i < connected_sockets.length; i++)
         {
             if(left_user_id == connected_sockets[i].user_id)
@@ -185,10 +163,9 @@ io.on('connection', (socket) =>
         const members_amount = await chat_controller.chatMembersAmount(chat_id);
         socket.to(chat_id).emit('user_left_conv', chat_id, members_amount);
     });
-
-    socket.on('broadcast_user_blockStatusChanged', async (user_id, new_block_status) =>
-    {
+    socket.on('broadcast_user_blockStatusChanged', async (user_id, new_block_status) => {
         const connected_userInfo = JSON.parse(await user_controller.getInfoJSONbyID(user_id));
         socket.broadcast.emit('user_blockStatusChanged', user_id, connected_userInfo.status, new_block_status);
     });
 })
+

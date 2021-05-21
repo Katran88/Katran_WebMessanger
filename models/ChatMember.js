@@ -7,3 +7,4 @@ const ChatMember = new Schema
 }, { versionKey: false });
 
 module.exports = model('ChatMember', ChatMember);
+

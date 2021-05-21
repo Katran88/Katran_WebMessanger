@@ -131,7 +131,7 @@
         }
 
         chat_panel_div.innerHTML += `<div id="${message_info.message_id}" data-sender_id='${message_info.sender_id}' data-chat_id="${message_info.chat_id}" class="p-2" onmouseenter="setMessageStatus_Read('${message_info.message_id}')" >
-                                        <div class="chat-bubble " style="float: ${user_id == message_info.sender_id ? 'right' : 'left'}; flex-direction: ${user_id == message_info.sender_id ? 'row-reverse' : 'row'}" >
+                                        <div class="chat-bubble " style="float: ${user_id == message_info.sender_id ? 'right' : 'left'}; box-shadow: 0 0 10px var(--blue-color); flex-direction: ${user_id == message_info.sender_id ? 'row-reverse' : 'row'}" >
                                             <div style="margin: 5px; min-width: 70px; ">
                                                 <img class='avatar-image' src='${message_info.sender_avatar}' style="margin-left: 20px" >
                                                 <div align='center'>

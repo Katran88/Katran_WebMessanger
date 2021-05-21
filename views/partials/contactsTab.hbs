@@ -23,6 +23,7 @@
         background: var(--mainbackground-color);
         transition: .5s ease;
         border-radius: 5px;
+        box-shadow: 0 0 10px var(--blue-color);
     }
 
     h6
@@ -268,32 +269,23 @@
         const login = await getUserLogin();
         clearContactsHTML();
         await sendRequest(`/api/${login}/contacts`, JSON.stringify({}),
-            async (contacts) =>
-            {
+            async (contacts) => {
                 await sendRequest(`/api/${login}/conversations`, JSON.stringify({}),
                     (convs) =>
                     {
                         for (let i = 0; i < contacts.length; i++)
-                        {
-                            addContactToHTML(contacts[i], true);
-                        }
+                        { addContactToHTML(contacts[i], true); }
 
                         for (let i = 0; i < convs.length; i++)
-                        {
-                            addConvToHTML(convs[i], true);
-                        }
+                        { addConvToHTML(convs[i], true); }
                     },
-                    (badRespJSON) =>
-                    {
-                        console.log(badRespJSON);
-                    }
+                    (badRespJSON) => { console.log(badRespJSON); }
                 );
             },
             (badRespJSON) =>
             {
                 console.log(badRespJSON);
-            }
-        );
+            });
     }
 
     function clearContactsHTML()

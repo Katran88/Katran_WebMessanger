@@ -12,3 +12,4 @@ const ChatMessage = new Schema
 }, { versionKey: false });
 
 module.exports = model('ChatMessage', ChatMessage);
+

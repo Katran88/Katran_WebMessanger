@@ -131,7 +131,8 @@ class chat_controller
 
         if(message_id)
         {
-            await ChatMessage.updateOne({_id: message_id}, {message_status: db_defaults.message_status.read});
+            await ChatMessage.updateOne( {_id: message_id},
+                                       {message_status: db_defaults.message_status.read});
 
             res.status(200).json(
             {
